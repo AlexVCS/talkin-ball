@@ -63,7 +63,7 @@ function Modal({
         if (e.target === e.currentTarget) close();
       }}
     >
-      <header>
+      <header role="presentation">
         <h2>{title}</h2>
         <button
           className="icon-button"
@@ -179,9 +179,7 @@ export default function App() {
     setCategory("All terms");
     setSavedOnly(false);
     window.location.hash = `term-${slug}`;
-    document
-      .getElementById("dictionary")
-      ?.scrollIntoView({ behavior: "smooth", block: "start" });
+    document.getElementById("dictionary")?.scrollIntoView({ block: "start" });
   };
   const jumpToDictionary = (event: MouseEvent<HTMLAnchorElement>) => {
     event.preventDefault();
@@ -190,7 +188,7 @@ export default function App() {
       return;
     }
     const dictionary = document.getElementById("dictionary");
-    dictionary?.scrollIntoView({ behavior: "smooth", block: "start" });
+    dictionary?.scrollIntoView({ block: "start" });
     dictionary?.focus({ preventScroll: true });
   };
   const save = (slug: string) =>
@@ -208,8 +206,19 @@ export default function App() {
 
   return (
     <>
-      <a className="skip-link" href="#dictionary" onClick={jumpToDictionary}>
-        Skip to dictionary
+      <a
+        className="skip-link"
+        href={review ? "#review" : "#dictionary"}
+        onClick={
+          review
+            ? (event) => {
+                event.preventDefault();
+                document.getElementById("review")?.focus();
+              }
+            : jumpToDictionary
+        }
+      >
+        {review ? "Skip to review queue" : "Skip to dictionary"}
       </a>
       <header className="site-header">
         <div className="header-inner">
@@ -247,7 +256,7 @@ export default function App() {
 
       {!review ? (
         <>
-          <section className="hero" aria-label="Welcome">
+          <section className="hero" aria-label="Welcome to Talkin’ Ball">
             <h1>
               Ever watched a{" "}
               <span
@@ -283,7 +292,11 @@ export default function App() {
               </div>
             </div>
             <div className="filter-row">
-              <div className="category-tabs" aria-label="Filter by category">
+              <div
+                className="category-tabs"
+                role="group"
+                aria-label="Filter by category"
+              >
                 {["All terms", "On-ball", "Off-ball", "Game IQ"].map((c) => (
                   <button
                     key={c}
@@ -512,7 +525,7 @@ export default function App() {
           </main>
         </>
       ) : (
-        <main className="review-page">
+        <main id="review" className="review-page" tabIndex={-1}>
           <a className="back-link" href={`#term-${current.slug}`}>
             <ArrowLeft size={15} /> Back to the dictionary
           </a>
@@ -553,8 +566,12 @@ export default function App() {
               <span>That’s the house rule.</span>
             </p>
           </div>
-          <div className="queue-toolbar">
-            <div className="category-tabs">
+          <div className="queue-toolbar" id="queue-controls" tabIndex={-1}>
+            <div
+              className="category-tabs"
+              role="group"
+              aria-label="Filter review queue"
+            >
               {["All drafts", "Ready to review", "Needs a clip"].map((f) => (
                 <button
                   key={f}
@@ -636,6 +653,7 @@ export default function App() {
                         disabled={!d.clipReady}
                         onClick={() => {
                           if (!d.clipReady) return;
+                          document.getElementById("queue-controls")?.focus();
                           setCollection((c) => ({
                             ...c,
                             approved: [...c.approved, d.id],
@@ -660,6 +678,7 @@ export default function App() {
                       <button
                         className="reject-button"
                         onClick={() => {
+                          document.getElementById("queue-controls")?.focus();
                           setCollection((c) => ({
                             ...c,
                             rejected: [...c.rejected, d.id],
@@ -768,7 +787,7 @@ export default function App() {
           <div className="video-player">
             <iframe
               title={EP[playing.ep].title}
-              src={`https://www.youtube-nocookie.com/embed/${EP[playing.ep].id}?start=${playing.t}&autoplay=1`}
+              src={`https://www.youtube-nocookie.com/embed/${EP[playing.ep].id}?start=${playing.t}&autoplay=${window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ? 0 : 1}`}
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
               allowFullScreen
               referrerPolicy="strict-origin-when-cross-origin"
@@ -849,11 +868,7 @@ function ClipCard({
     <div
       className={`clip-card ${primary ? "primary-clip" : "additional-clip"}`}
     >
-      <button
-        className="clip-thumbnail"
-        onClick={play}
-        aria-label={`Play ${episode.show} at ${fmt(clip.t)}`}
-      >
+      <button className="clip-thumbnail" onClick={play}>
         <img
           src={`https://i.ytimg.com/vi/${episode.id}/hqdefault.jpg`}
           alt=""

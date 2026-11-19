@@ -78,12 +78,10 @@ input {
   outline-offset: 4px;
 }
 button:focus-visible,
-a:focus-visible {
+a:focus-visible,
+input:focus-visible {
   outline: 2px solid var(--text);
   box-shadow: 0 0 0 4px var(--bg);
-}
-input:focus-visible {
-  outline: none;
 }
 h1,
 h2,
@@ -380,7 +378,7 @@ svg {
 }
 .entry-heading h2 {
   min-width: 0;
-  font: 800 clamp(64px, 9vw, 144px)/1 var(--display);
+  font: 800 clamp(64px, 14vw, 200px)/0.92 var(--display);
   letter-spacing: -0.065em;
   overflow-wrap: anywhere;
 }
