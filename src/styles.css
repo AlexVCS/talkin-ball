@@ -660,9 +660,9 @@ svg {
   aspect-ratio: 16 / 9;
   min-height: 0;
   width: 100%;
-  background: #111;
+  background: var(--media-bg);
   overflow: hidden;
-  color: var(--bg);
+  color: var(--media-fg);
   text-align: left;
   display: block;
   isolation: isolate;

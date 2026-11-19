@@ -12,6 +12,8 @@
   --color-rule-dark: #26262a;
   --color-wash-dark: #151517;
   --color-court-dark: #7397ff;
+  --media-bg: #111111;
+  --media-fg: #ffffff;
   --bg: var(--color-bg);
   --surface: var(--color-bg);
   --surface-muted: var(--color-wash);
