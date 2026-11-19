@@ -354,7 +354,7 @@ describe("sample review queue", () => {
   });
 });
 describe("saved terms", () => {
-  it("offers undo after unsaving the entry open in My saved", () => {
+  it("offers undo after unsaving the entry open in Saved", () => {
     localStorage.setItem(
       STORAGE_KEY,
       JSON.stringify({
@@ -365,7 +365,7 @@ describe("saved terms", () => {
     );
     route("#term-ghost-screen");
     render(<App />);
-    fireEvent.click(screen.getByRole("button", { name: /My saved/ }));
+    fireEvent.click(screen.getByRole("button", { name: /^Saved/ }));
     fireEvent.click(
       screen.getByRole("button", { name: "Unsave ghost screen" }),
     );
@@ -374,7 +374,7 @@ describe("saved terms", () => {
     );
     fireEvent.click(screen.getByRole("button", { name: "Undo" }));
     expect(
-      screen.getByRole("heading", { name: /^ghost screen\s*\.$/ }),
+      screen.getByRole("heading", { name: /^ghost screen$/ }),
     ).toBeInTheDocument();
     expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!).saved).toEqual([
       "butter",
@@ -387,7 +387,7 @@ describe("saved terms", () => {
       JSON.stringify({ saved: ["butter"], approved: [], rejected: [] }),
     );
     render(<App />);
-    fireEvent.click(screen.getByRole("button", { name: /My saved/ }));
+    fireEvent.click(screen.getByRole("button", { name: /^Saved/ }));
     fireEvent.change(screen.getByRole("searchbox"), {
       target: { value: "ghost" },
     });
@@ -397,7 +397,7 @@ describe("saved terms", () => {
     fireEvent.click(screen.getByRole("button", { name: /Search all terms/ }));
     expect(screen.getByRole("searchbox")).toHaveValue("ghost");
     expect(
-      screen.getByRole("heading", { name: /^ghost screen\s*\.$/ }),
+      screen.getByRole("heading", { name: /^ghost screen$/ }),
     ).toBeInTheDocument();
   });
   it("keeps undo available when the browser can’t save", () => {
