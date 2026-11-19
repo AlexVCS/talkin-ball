@@ -247,6 +247,44 @@ describe("dictionary", () => {
   });
 });
 describe("Paper layout", () => {
+  it.each(["search", "category", "saved"])(
+    "focuses the requested shuffle entry after clearing a %s filter",
+    (filter) => {
+      vi.spyOn(Math, "random").mockReturnValue(0);
+      if (filter === "saved") {
+        localStorage.setItem(
+          STORAGE_KEY,
+          JSON.stringify({ saved: ["blender"], approved: [], rejected: [] }),
+        );
+      }
+      render(<App />);
+      if (filter === "search") {
+        fireEvent.change(screen.getByRole("searchbox"), {
+          target: { value: "blender" },
+        });
+      } else {
+        fireEvent.click(
+          screen.getByRole("button", {
+            name: filter === "saved" ? /^Saved/ : /^Off-ball/,
+          }),
+        );
+      }
+      expect(
+        screen.queryByRole("heading", { name: "butter" }),
+      ).not.toBeInTheDocument();
+      const shuffle = screen.getByRole("button", {
+        name: /Put me on to something/,
+      });
+      shuffle.focus();
+      fireEvent.click(shuffle);
+      route(window.location.hash);
+      expect(
+        screen.getByRole("heading", { name: "hostage dribble" }),
+      ).toBeInTheDocument();
+      expect(document.querySelector(".term-entry")).toHaveFocus();
+      vi.restoreAllMocks();
+    },
+  );
   it("moves shuffle focus to the new entry instead of skipping its controls", () => {
     vi.spyOn(Math, "random").mockReturnValue(0);
     render(<App />);

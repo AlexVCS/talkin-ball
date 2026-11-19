@@ -93,7 +93,7 @@ export default function App() {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("All terms");
   const [savedOnly, setSavedOnly] = useState(false);
-  const focusSelectedEntry = useRef(false);
+  const focusSelectedEntry = useRef<string | null>(null);
   const [collection, setCollection] = useState<Collection>(readCollection);
   const [notice, setNoticeState] = useState<Notice | null>(null);
   const setNotice = (text: string, undo?: () => void) =>
@@ -135,12 +135,12 @@ export default function App() {
           block: "nearest",
           inline: "nearest",
         });
-    if (focusSelectedEntry.current) {
+    if (focusSelectedEntry.current === term?.slug) {
       (
         document.querySelector<HTMLElement>(".term-entry") ||
         document.getElementById("dictionary")
       )?.focus({ preventScroll: true });
-      focusSelectedEntry.current = false;
+      focusSelectedEntry.current = null;
     }
   }, [term?.slug, hash]);
 
@@ -216,7 +216,7 @@ export default function App() {
   }, []);
 
   const selectTerm = (slug: string) => {
-    focusSelectedEntry.current = true;
+    focusSelectedEntry.current = slug;
     setQuery("");
     setCategory("All terms");
     setSavedOnly(false);
