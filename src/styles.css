@@ -26,9 +26,9 @@
   --bg: #f8f7f2;
   --surface: #fffefa;
   --text: #242a24;
-  --text-muted: #71756b;
+  --text-muted: #5e6759;
   --border: #dedfd4;
-  --accent: #f15a29;
+  --accent: #b63c17;
   --accent-fg: #fff;
   --primary-action: #242a24;
   --primary-action-fg: #fff;
@@ -87,10 +87,10 @@ input {
 }
 button:focus-visible,
 a:focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--text);
 }
 input:focus-visible {
-  outline: none;
+  outline: 2px solid var(--text);
 }
 h1,
 h2,
@@ -2479,6 +2479,69 @@ button {
   .hero h1 br:first-child {
     display: initial;
   }
+}
+.proof-strip,
+.category-tabs button,
+.filter-row > span,
+.index-label,
+.term-number,
+.term-button small,
+.index-note p,
+.index-note strong,
+.entry-topline,
+.entry-topline > span:first-child,
+.part-of-speech,
+.aliases,
+.aliases > span,
+.facts dt,
+.facts dd,
+.diagram-top,
+.diagram-top > button,
+.diagram figcaption,
+.legend,
+.subsection-title > span,
+.clip-attribution small,
+.clip-attribution > a,
+.related-terms small,
+.site-footer > p,
+.site-footer > span,
+.back-link,
+.review-intro > span,
+.review-stats span,
+.draft-state,
+.draft-state.ready,
+.draft-name > p,
+.draft-details > .eyebrow,
+.draft-sources > span,
+.draft-sources > p,
+.draft-sources > a,
+.draft-note,
+.reject-button,
+.source-required,
+.queue-disclaimer,
+.empty-state > p,
+.about-content > p,
+.video-caption p,
+.video-caption small {
+  color: var(--text-muted);
+}
+.search-box input::placeholder {
+  color: var(--text-muted);
+  opacity: 1;
+}
+.search-box,
+.bookmark-button,
+.saved-toggle {
+  border-color: var(--text-muted);
+}
+.bookmark-button {
+  color: var(--text-muted);
+}
+.category-tabs button.selected {
+  color: var(--primary-action-fg);
+}
+.about-content > .large-copy {
+  color: var(--text);
 }
 @media (prefers-reduced-motion: reduce) {
   html {
