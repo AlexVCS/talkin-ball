@@ -44,7 +44,7 @@ describe("dictionary", () => {
       render(<App />);
       fireEvent.click(
         screen.getByRole("button", {
-          name: "From the source: Play Wizards TV broadcast at 25:50",
+          name: "FROM THE SOURCE Wizards TV broadcast 25:50",
         }),
       );
       expect(
@@ -107,7 +107,7 @@ describe("dictionary", () => {
     render(<App />);
     fireEvent.click(
       screen.getByRole("button", {
-        name: "From the source: Play Wizards TV broadcast at 25:50",
+        name: "FROM THE SOURCE Wizards TV broadcast 25:50",
       }),
     );
     const dialog = screen.getByRole("dialog");
@@ -220,7 +220,7 @@ describe("sample review queue", () => {
     expect(screen.getByText("2 SOURCE CLIPS")).toBeInTheDocument();
     expect(
       screen.getByRole("button", {
-        name: "From the source: Play Mind the Game at 29:59",
+        name: "FROM THE SOURCE Mind the Game 29:59",
       }),
     ).toBeInTheDocument();
     view.unmount();

@@ -975,11 +975,7 @@ function ClipCard({
     <div
       className={`clip-card ${primary ? "primary-clip" : "additional-clip"}`}
     >
-      <button
-        className="clip-thumbnail"
-        onClick={play}
-        aria-label={`From the source: Play ${episode.show} at ${fmt(clip.t)}`}
-      >
+      <button className="clip-thumbnail" onClick={play}>
         <img
           src={`https://i.ytimg.com/vi/${episode.id}/hqdefault.jpg`}
           alt=""
