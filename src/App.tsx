@@ -249,7 +249,7 @@ export default function App() {
     <>
       <a
         className="skip-link"
-        href={review ? "#review-main" : "#dictionary"}
+        href={review ? "#review" : "#dictionary"}
         onClick={
           review
             ? (event) => {

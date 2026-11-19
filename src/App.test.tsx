@@ -196,7 +196,10 @@ describe("sample review queue", () => {
   it("skips to review content and retains focus after removing a draft", () => {
     route("#review");
     render(<App />);
-    fireEvent.click(screen.getByRole("link", { name: "Skip to review queue" }));
+    const skip = screen.getByRole("link", { name: "Skip to review queue" });
+    expect(skip).toHaveAttribute("href", "#review");
+    fireEvent.click(skip);
+    expect(window.location.hash).toBe("#review");
     expect(screen.getByRole("main")).toHaveFocus();
     fireEvent.click(screen.getAllByRole("button", { name: "Reject" })[0]);
     expect(document.getElementById("queue-controls")).toHaveFocus();
