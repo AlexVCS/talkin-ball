@@ -1297,6 +1297,41 @@ button {
 .back-link:hover {
   color: var(--accent);
 }
+.admin-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+.admin-bar > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 10px;
+  color: #818b73;
+}
+.admin-bar .text-button {
+  display: inline-flex;
+  align-items: center;
+}
+.gate-card {
+  max-width: 460px;
+  padding: 20px 0 40px;
+}
+.gate-card .eyebrow {
+  color: var(--accent);
+  font-size: 9px;
+}
+.gate-card h1 {
+  font: 900 64px/0.98 var(--display);
+  letter-spacing: -1px;
+  margin: 14px 0 18px;
+}
+.gate-card p:not(.eyebrow) {
+  font-size: 15px;
+  margin-bottom: 24px;
+}
 .review-title {
   display: flex;
   justify-content: space-between;

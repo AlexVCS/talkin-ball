@@ -1,6 +1,7 @@
 import { createServer } from "node:http";
 import { readFile, stat } from "node:fs/promises";
 import { resolve, extname, sep } from "node:path";
+import { createApi } from "./server/api.mjs";
 
 const root = resolve("dist");
 const mime = {
@@ -15,7 +16,14 @@ const mime = {
   ".json": "application/json",
 };
 const port = Number(process.env.PORT || 4173);
+const api = createApi();
 createServer(async (req, res) => {
+  try {
+    if (await api(req, res)) return;
+  } catch {
+    res.writeHead(500);
+    return res.end("Server error");
+  }
   if (!["GET", "HEAD"].includes(req.method)) {
     res.writeHead(405, { Allow: "GET, HEAD" });
     return res.end();
