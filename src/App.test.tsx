@@ -1,14 +1,39 @@
 import { act, fireEvent, render, screen, within } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import App from "./App";
 import { STORAGE_KEY } from "./model";
 import * as model from "./model";
 import { TERMS } from "./data";
+import QUEUE from "../server/review-queue.json";
+
+const json = (body: unknown, status = 200) =>
+  Promise.resolve(new Response(JSON.stringify(body), { status }));
+const signIn = (admin: boolean, configured = true) =>
+  vi.stubGlobal(
+    "fetch",
+    vi.fn((url: string) =>
+      url === "/api/session"
+        ? json({ configured, admin, login: admin ? "AlexVCS" : null })
+        : url === "/api/review-queue"
+          ? admin
+            ? json(QUEUE)
+            : json({ error: "Admin sign-in required" }, 401)
+          : Promise.resolve(new Response(null, { status: 204 })),
+    ),
+  );
+const renderAdmin = async () => {
+  signIn(true);
+  const view = render(<App />);
+  await screen.findByRole("link", { name: /Review queue/ });
+  return view;
+};
 
 beforeEach(() => {
   localStorage.clear();
   window.history.replaceState(null, "", "/#term-butter");
+  signIn(false);
 });
+afterEach(() => vi.unstubAllGlobals());
 const route = (hash: string) =>
   act(() => {
     window.history.replaceState(null, "", "/" + hash);
@@ -218,9 +243,9 @@ describe("dictionary", () => {
       screen.getByRole("heading", { name: /^butter$/ }),
     ).toBeInTheDocument();
   });
-  it("preserves the selected term across section jumps and review navigation", () => {
+  it("preserves the selected term across section jumps and review navigation", async () => {
     route("#term-ghost-screen");
-    render(<App />);
+    await renderAdmin();
     route("#dictionary");
     expect(
       screen.getByRole("heading", { name: /^ghost screen$/ }),
@@ -300,9 +325,9 @@ describe("Paper layout", () => {
     expect(document.querySelector(".term-entry")).toHaveFocus();
     vi.restoreAllMocks();
   });
-  it("reveals preview drafts even when a previous queue filter excluded them", () => {
+  it("reveals preview drafts even when a previous queue filter excluded them", async () => {
     route("#review");
-    render(<App />);
+    await renderAdmin();
     fireEvent.click(screen.getByRole("button", { name: /Needs a clip/ }));
     expect(document.querySelectorAll(".draft-card")).toHaveLength(2);
     route("#term-butter");
@@ -316,8 +341,8 @@ describe("Paper layout", () => {
       screen.getByRole("heading", { name: /^bluff screen/ }),
     ).toBeInTheDocument();
   });
-  it("keeps the approved heading and the real review drafts", () => {
-    render(<App />);
+  it("keeps the approved heading and the real review drafts", async () => {
+    await renderAdmin();
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(
       "Ever watched a 🏀 game, and thought,what are they talkin’ bout?",
     );
@@ -381,10 +406,79 @@ describe("Paper layout", () => {
     expect(court.querySelector('[stroke="#f15a29"]')).toBeNull();
   });
 });
-describe("sample review queue", () => {
-  it("skips to review content and retains focus after removing a draft", () => {
+describe("admin sign-in", () => {
+  it("hides the review queue from visitors", async () => {
+    render(<App />);
+    await act(async () => {});
+    expect(
+      screen.queryByRole("link", { name: /Review queue/ }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("region", { name: "In review" }),
+    ).not.toBeInTheDocument();
+    route("#review");
+    expect(
+      screen.getByRole("heading", { name: "Review queue." }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: "Sign in with GitHub" }),
+    ).toHaveAttribute("href", "/auth/github");
+    expect(document.querySelector(".draft-card")).not.toBeInTheDocument();
+    expect(fetch).not.toHaveBeenCalledWith("/api/review-queue");
+  });
+  it("explains when another GitHub account signs in", async () => {
+    window.history.replaceState(null, "", "/?auth=denied#review");
+    render(<App />);
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "That GitHub account can’t open the review queue.",
+    );
+    expect(window.location.search).toBe("");
+    expect(window.location.hash).toBe("#review");
+  });
+  it("does not offer sign-in when GitHub isn’t configured", async () => {
+    signIn(false, false);
     route("#review");
     render(<App />);
+    expect(
+      await screen.findByText(
+        "GitHub sign-in isn’t set up on this server yet.",
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("link", { name: "Sign in with GitHub" }),
+    ).not.toBeInTheDocument();
+  });
+  it("shows the queue to the admin and signs out", async () => {
+    route("#review");
+    await renderAdmin();
+    expect(screen.getByText("AlexVCS")).toBeInTheDocument();
+    expect(document.querySelectorAll(".draft-card")).toHaveLength(3);
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Sign out" }));
+    });
+    expect(fetch).toHaveBeenCalledWith("/auth/signout", { method: "POST" });
+    expect(
+      screen.queryByRole("link", { name: /Review queue/ }),
+    ).not.toBeInTheDocument();
+    expect(window.location.hash).toBe("#term-butter");
+  });
+});
+it("keeps the admin signed in when sign-out fails", async () => {
+  route("#review");
+  await renderAdmin();
+  vi.mocked(fetch).mockImplementationOnce(() => json({}, 500));
+  await act(async () => {
+    fireEvent.click(screen.getByRole("button", { name: "Sign out" }));
+  });
+  expect(screen.getByText("Couldn’t sign out. Try again.")).toBeInTheDocument();
+  expect(
+    screen.getByRole("link", { name: /Review queue/ }),
+  ).toBeInTheDocument();
+});
+describe("sample review queue", () => {
+  it("skips to review content and retains focus after removing a draft", async () => {
+    route("#review");
+    await renderAdmin();
     const skip = screen.getByRole("link", { name: "Skip to review queue" });
     expect(skip).toHaveAttribute("href", "#review");
     fireEvent.click(skip);
@@ -394,9 +488,9 @@ describe("sample review queue", () => {
     expect(document.getElementById("queue-controls")).toHaveFocus();
     expect(screen.getByRole("status")).toHaveTextContent("Draft rejected");
   });
-  it("requires a source and persists approval on the correct entry", () => {
+  it("requires a source and persists approval on the correct entry", async () => {
     route("#review");
-    const view = render(<App />);
+    const view = await renderAdmin();
     const cards = document.querySelectorAll(".draft-card");
     expect(
       within(cards[0] as HTMLElement).getByRole("button", { name: /Approve/ }),
@@ -413,16 +507,16 @@ describe("sample review queue", () => {
       }),
     ).toBeInTheDocument();
     view.unmount();
-    render(<App />);
+    await renderAdmin();
     expect(screen.getByText("2 SOURCE CLIPS")).toBeInTheDocument();
   });
-  it("rejects drafts and restores the queue without removing bookmarks", () => {
+  it("rejects drafts and restores the queue without removing bookmarks", async () => {
     localStorage.setItem(
       STORAGE_KEY,
       JSON.stringify({ saved: ["butter"], approved: [], rejected: [] }),
     );
     route("#review");
-    render(<App />);
+    await renderAdmin();
     fireEvent.click(screen.getAllByRole("button", { name: "Reject" })[0]);
     expect(document.querySelectorAll(".draft-card")).toHaveLength(2);
     fireEvent.click(screen.getByRole("button", { name: "Reset sample queue" }));
@@ -436,9 +530,9 @@ describe("sample review queue", () => {
       "butter",
     ]);
   });
-  it("undoes a rejection without resetting other decisions", () => {
+  it("undoes a rejection without resetting other decisions", async () => {
     route("#review");
-    render(<App />);
+    await renderAdmin();
     const cards = document.querySelectorAll(".draft-card");
     fireEvent.click(
       within(cards[2] as HTMLElement).getByRole("button", { name: /Approve/ }),

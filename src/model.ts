@@ -1,4 +1,4 @@
-import { EP, QUEUE, TERMS, type Term } from "./data";
+import { EP, TERMS, type Draft, type Term } from "./data";
 
 export const STORAGE_KEY = "talkin-ball:v1";
 export interface Collection {
@@ -14,12 +14,13 @@ export function readCollection(): Collection {
     );
     if (!value || typeof value !== "object") return EMPTY;
     const item = value as Record<string, unknown>;
-    const valid = (key: string, ids: string[]) =>
+    const valid = (key: string, ids?: string[]) =>
       Array.isArray(item[key])
         ? [
             ...new Set(
               (item[key] as unknown[]).filter(
-                (s): s is string => typeof s === "string" && ids.includes(s),
+                (s): s is string =>
+                  typeof s === "string" && (!ids || ids.includes(s)),
               ),
             ),
           ]
@@ -29,37 +30,36 @@ export function readCollection(): Collection {
         "saved",
         TERMS.map((t) => t.slug),
       ),
-      approved: valid(
-        "approved",
-        QUEUE.filter((q) => q.clipReady).map((q) => q.id),
-      ),
-      rejected: valid(
-        "rejected",
-        QUEUE.map((q) => q.id),
-      ),
+      approved: valid("approved"),
+      rejected: valid("rejected"),
     };
   } catch {
     return EMPTY;
   }
 }
-export function getTerms(collection: Collection): Term[] {
+export function getTerms(collection: Collection, queue: Draft[] = []): Term[] {
   return TERMS.map((term) => ({
     ...term,
     clips: [
       ...term.clips,
-      ...QUEUE.filter(
-        (d) => collection.approved.includes(d.id) && d.merge === term.slug,
-      ).flatMap((d) =>
-        d.sources
-          .filter((s) => s.ep && s.t != null)
-          .map((s) => ({
-            ep: s.ep!,
-            t: s.t!,
-            who: "JJ Redick to LeBron James",
-            quote: "On the ghost screen, you called it a bluff screen.",
-            ctx: "Approved from the review queue",
-          })),
-      ),
+      ...queue
+        .filter(
+          (d) =>
+            d.clipReady &&
+            collection.approved.includes(d.id) &&
+            d.merge === term.slug,
+        )
+        .flatMap((d) =>
+          d.sources
+            .filter((s) => s.ep && s.t != null)
+            .map((s) => ({
+              ep: s.ep!,
+              t: s.t!,
+              who: "JJ Redick to LeBron James",
+              quote: "On the ghost screen, you called it a bluff screen.",
+              ctx: "Approved from the review queue",
+            })),
+        ),
     ],
   }));
 }

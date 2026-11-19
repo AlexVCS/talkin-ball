@@ -322,39 +322,3 @@ export const TERMS: Term[] = [
     related: ["court-mapping", "ghost-screen"],
   },
 ];
-
-export const QUEUE: Draft[] = [
-  {
-    id: "red",
-    term: "Red",
-    kind: "Heard on a broadcast, needs a clip",
-    def: "A late shot clock, same idea as butter.",
-    sources: [
-      { label: "Wizards local TV broadcast" },
-      { label: "Heat local TV broadcast" },
-    ],
-    note: "No glossary or search result has this meaning. The bots will look for the moment in the teams’ broadcast highlights.",
-    clock: true,
-    clipReady: false,
-  },
-  {
-    id: "english",
-    term: "English",
-    kind: "Suggested term, needs a clip",
-    proper: true,
-    def: "Spin on the ball, usually on a bank shot or a soft roll on the rim. Borrowed from billiards.",
-    sources: [{ label: "General broadcast usage" }],
-    note: "Bots will timestamp the first broadcast clip where a commentator says it.",
-    clipReady: false,
-  },
-  {
-    id: "bluff",
-    term: "Bluff screen",
-    kind: "Example bot draft: new alias for Ghost screen",
-    def: "LeBron’s name for a ghost screen.",
-    sources: [{ label: EP.hardest.title, ep: "hardest", t: 1799 }],
-    note: "Found in the transcript: “on the ghost screen, you called it a bluff screen.” Approving adds the clip to the Ghost screen entry.",
-    merge: "ghost-screen",
-    clipReady: true,
-  },
-];

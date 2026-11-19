@@ -1,6 +1,9 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { EMPTY, getTerms, matches, readCollection, STORAGE_KEY } from "./model";
-import { EP, TERMS, QUEUE } from "./data";
+import { EP, TERMS, type Draft } from "./data";
+import queueJson from "../server/review-queue.json";
+
+const QUEUE = queueJson as Draft[];
 
 beforeEach(() => localStorage.clear());
 describe("dictionary content", () => {
@@ -49,18 +52,32 @@ describe("local collection", () => {
     );
     expect(readCollection()).toEqual({
       saved: ["butter"],
-      approved: ["bluff"],
-      rejected: ["english"],
+      approved: ["red", "bluff"],
+      rejected: ["english", "bad"],
     });
   });
   it("adds an approved source exactly once without mutating the original terms", () => {
     const collection = { ...EMPTY, approved: ["bluff", "bluff"] };
-    const ghost = getTerms(collection).find((t) => t.slug === "ghost-screen")!;
+    const ghost = getTerms(collection, QUEUE).find(
+      (t) => t.slug === "ghost-screen",
+    )!;
     expect(ghost.clips).toHaveLength(2);
     expect(ghost.clips[1]).toMatchObject({ ep: "hardest", t: 1799 });
     expect(TERMS.find((t) => t.slug === "ghost-screen")!.clips).toHaveLength(1);
     expect(
-      getTerms(EMPTY).find((t) => t.slug === "ghost-screen")!.clips,
+      getTerms(EMPTY, QUEUE).find((t) => t.slug === "ghost-screen")!.clips,
     ).toHaveLength(1);
+    expect(
+      getTerms(collection).find((t) => t.slug === "ghost-screen")!.clips,
+    ).toHaveLength(1);
+  });
+  it("never adds clips from drafts that have no source", () => {
+    const red = { ...QUEUE[0], merge: "butter" };
+    const butter = getTerms({ ...EMPTY, approved: ["red"] }, [red]).find(
+      (t) => t.slug === "butter",
+    )!;
+    expect(butter.clips).toHaveLength(
+      TERMS.find((t) => t.slug === "butter")!.clips.length,
+    );
   });
 });

@@ -16,12 +16,14 @@ import {
   Clock3,
   ExternalLink,
   ListFilter,
+  LogIn,
+  LogOut,
   Play,
   Search,
   Shuffle,
   X,
 } from "lucide-react";
-import { EP, QUEUE, TERMS, fmt, yt, type Clip, type Term } from "./data";
+import { EP, TERMS, fmt, yt, type Clip, type Draft, type Term } from "./data";
 import {
   categories,
   displayTerm,
@@ -33,6 +35,73 @@ import {
 } from "./model";
 import Diagram from "./Diagram";
 import ThemeToggle from "./ThemeToggle";
+
+type Admin =
+  | { status: "loading" }
+  | { status: "visitor"; configured: boolean }
+  | { status: "admin"; login: string };
+type AuthResult = "denied" | "error" | "unconfigured" | null;
+
+function readAuthResult(): AuthResult {
+  const params = new URLSearchParams(window.location.search);
+  const result = params.get("auth");
+  if (!result) return null;
+  params.delete("auth");
+  const search = params.toString();
+  window.history.replaceState(
+    null,
+    "",
+    `${window.location.pathname}${search ? `?${search}` : ""}${window.location.hash}`,
+  );
+  return ["denied", "error", "unconfigured"].includes(result)
+    ? (result as AuthResult)
+    : null;
+}
+
+function AdminGate({
+  admin,
+  authResult,
+  back,
+}: {
+  admin: Admin;
+  authResult: AuthResult;
+  back: string;
+}) {
+  const configured = !(
+    authResult === "unconfigured" ||
+    (admin.status === "visitor" && !admin.configured)
+  );
+  const message = !configured
+    ? "GitHub sign-in isn’t set up on this server yet."
+    : authResult === "denied"
+      ? "That GitHub account can’t open the review queue. Only the site’s admin can."
+      : authResult === "error"
+        ? "GitHub sign-in didn’t finish. Try again."
+        : "Sign in with the admin GitHub account to review drafts.";
+  return (
+    <main id="review" className="review-page admin-gate" tabIndex={-1}>
+      <a className="back-link" href={back}>
+        <ArrowLeft size={15} /> Back to the dictionary
+      </a>
+      <div className="gate-card">
+        <p className="eyebrow">ADMINS ONLY</p>
+        <h1>Review queue.</h1>
+        {admin.status === "loading" ? (
+          <p role="status">Checking your sign-in…</p>
+        ) : (
+          <>
+            <p role={authResult ? "alert" : undefined}>{message}</p>
+            {configured && (
+              <a className="button primary" href="/auth/github">
+                <LogIn size={16} /> Sign in with GitHub
+              </a>
+            )}
+          </>
+        )}
+      </div>
+    </main>
+  );
+}
 
 interface Notice {
   text: string;
@@ -102,9 +171,13 @@ export default function App() {
   const [playing, setPlaying] = useState<Clip | null>(null);
   const [queueFilter, setQueueFilter] = useState("All drafts");
   const [resetting, setResetting] = useState(false);
+  const [admin, setAdmin] = useState<Admin>({ status: "loading" });
+  const [queue, setQueue] = useState<Draft[]>([]);
+  const [authResult] = useState(readAuthResult);
   const searchRef = useRef<HTMLInputElement>(null);
   const review = hash === "#review";
-  const terms = getTerms(collection);
+  const isAdmin = admin.status === "admin";
+  const terms = getTerms(collection, isAdmin ? queue : []);
   const visible = terms.filter(
     (t) =>
       matches(t, query) &&
@@ -120,7 +193,7 @@ export default function App() {
     );
   const current = terms.find((t) => t.slug === currentSlug) || terms[0];
   const term = visible.find((t) => t.slug === current.slug) || visible[0];
-  const drafts = QUEUE.filter(
+  const drafts = (isAdmin ? queue : []).filter(
     (d) =>
       !collection.approved.includes(d.id) &&
       !collection.rejected.includes(d.id),
@@ -144,6 +217,30 @@ export default function App() {
     }
   }, [term?.slug, hash]);
 
+  useEffect(() => {
+    let live = true;
+    (async () => {
+      try {
+        const session = await fetch("/api/session").then((r) => r.json());
+        if (!session.admin) {
+          if (live)
+            setAdmin({ status: "visitor", configured: !!session.configured });
+          return;
+        }
+        const response = await fetch("/api/review-queue");
+        if (!response.ok) throw new Error("Review queue unavailable");
+        const drafts: Draft[] = await response.json();
+        if (!live) return;
+        setQueue(drafts);
+        setAdmin({ status: "admin", login: session.login });
+      } catch {
+        if (live) setAdmin({ status: "visitor", configured: true });
+      }
+    })();
+    return () => {
+      live = false;
+    };
+  }, []);
   useEffect(() => {
     const route = () => {
       const next = window.location.hash;
@@ -259,6 +356,17 @@ export default function App() {
       setCollection((c) => ({ ...c, [list]: c[list].filter((d) => d !== id) })),
     );
   };
+  const signOut = async () => {
+    try {
+      const response = await fetch("/auth/signout", { method: "POST" });
+      if (!response.ok) throw new Error("Sign-out failed");
+    } catch {
+      return setNotice("Couldn’t sign out. Try again.");
+    }
+    setQueue([]);
+    setAdmin({ status: "visitor", configured: true });
+    window.location.hash = `term-${current.slug}`;
+  };
   const clearFilters = () => {
     setQuery("");
     setCategory("All terms");
@@ -300,16 +408,18 @@ export default function App() {
             >
               Dictionary
             </a>
-            <a
-              href="#review"
-              className={review ? "active" : ""}
-              aria-current={review ? "page" : undefined}
-            >
-              Review queue{" "}
-              <span className="nav-count">
-                {String(drafts.length).padStart(2, "0")}
-              </span>
-            </a>
+            {isAdmin && (
+              <a
+                href="#review"
+                className={review ? "active" : ""}
+                aria-current={review ? "page" : undefined}
+              >
+                Review queue{" "}
+                <span className="nav-count">
+                  {String(drafts.length).padStart(2, "0")}
+                </span>
+              </a>
+            )}
           </nav>
           <ThemeToggle />
         </div>
@@ -575,48 +685,64 @@ export default function App() {
                 <ArrowUpRight size={15} />
               </button>
             </div>
-            <section
-              className="queue-preview"
-              aria-labelledby="queue-preview-title"
-            >
-              <div className="queue-preview-heading">
-                <h2 id="queue-preview-title">In review</h2>
-                <p>Drafts need a clip before they go in the book.</p>
-              </div>
-              {drafts.map((draft) => (
-                <a
-                  className="queue-preview-row"
-                  href="#review"
-                  key={draft.id}
-                  onClick={() => setQueueFilter("All drafts")}
-                >
-                  <h3>{displayTerm(draft)}</h3>
-                  <span className="queue-preview-kind">{draft.kind}</span>
-                  <p>{draft.def}</p>
-                  <span className="queue-preview-count">
-                    {draft.sources.filter((source) => source.ep).length}{" "}
-                    {draft.sources.filter((source) => source.ep).length === 1
-                      ? "clip"
-                      : "clips"}
-                  </span>
-                  <span className="queue-preview-link">
-                    Review draft <ArrowUpRight size={14} />
-                  </span>
-                </a>
-              ))}
-              {!drafts.length && (
-                <p className="queue-preview-empty">
-                  All caught up. <a href="#review">View the review queue</a>
-                </p>
-              )}
-            </section>
+            {isAdmin && (
+              <section
+                className="queue-preview"
+                aria-labelledby="queue-preview-title"
+              >
+                <div className="queue-preview-heading">
+                  <h2 id="queue-preview-title">In review</h2>
+                  <p>Drafts need a clip before they go in the book.</p>
+                </div>
+                {drafts.map((draft) => (
+                  <a
+                    className="queue-preview-row"
+                    href="#review"
+                    key={draft.id}
+                    onClick={() => setQueueFilter("All drafts")}
+                  >
+                    <h3>{displayTerm(draft)}</h3>
+                    <span className="queue-preview-kind">{draft.kind}</span>
+                    <p>{draft.def}</p>
+                    <span className="queue-preview-count">
+                      {draft.sources.filter((source) => source.ep).length}{" "}
+                      {draft.sources.filter((source) => source.ep).length === 1
+                        ? "clip"
+                        : "clips"}
+                    </span>
+                    <span className="queue-preview-link">
+                      Review draft <ArrowUpRight size={14} />
+                    </span>
+                  </a>
+                ))}
+                {!drafts.length && (
+                  <p className="queue-preview-empty">
+                    All caught up. <a href="#review">View the review queue</a>
+                  </p>
+                )}
+              </section>
+            )}
           </main>
         </>
+      ) : admin.status !== "admin" ? (
+        <AdminGate
+          admin={admin}
+          authResult={authResult}
+          back={`#term-${current.slug}`}
+        />
       ) : (
         <main id="review" className="review-page" tabIndex={-1}>
-          <a className="back-link" href={`#term-${current.slug}`}>
-            <ArrowLeft size={15} /> Back to the dictionary
-          </a>
+          <div className="admin-bar">
+            <a className="back-link" href={`#term-${current.slug}`}>
+              <ArrowLeft size={15} /> Back to the dictionary
+            </a>
+            <span>
+              Signed in as <strong>{admin.login}</strong>
+              <button className="text-button" onClick={signOut}>
+                <LogOut size={15} /> Sign out
+              </button>
+            </span>
+          </div>
           <div className="review-title">
             <div>
               <p className="eyebrow">BEHIND THE PLAYBOOK</p>
@@ -724,17 +850,7 @@ export default function App() {
                         ),
                       )}
                     </div>
-                    <p className="draft-note">
-                      {d.note
-                        .replace(
-                          "Bots will timestamp the first broadcast clip where a commentator says it.",
-                          "A timestamped broadcast clip is needed before this can be approved.",
-                        )
-                        .replace(
-                          "The bots will look for the moment in the teams’ broadcast highlights.",
-                          "A timestamped broadcast clip is needed before this can be approved.",
-                        )}
-                    </p>
+                    <p className="draft-note">{d.note}</p>
                     <div className="draft-actions">
                       <button
                         className="button primary"
@@ -798,9 +914,9 @@ export default function App() {
             </div>
           )}
           <p className="queue-disclaimer">
-            <ListFilter size={14} /> This is a local review demo, not an
-            authenticated publishing workflow. No bots or automated ingestion
-            are connected.
+            <ListFilter size={14} /> Only the admin can see this queue.
+            Decisions are saved in this browser only; no bots or automated
+            ingestion are connected.
           </p>
         </main>
       )}
@@ -862,11 +978,7 @@ export default function App() {
               artifact, not an independent fact-check. Videos are hosted by
               YouTube and may change or be unavailable.
             </p>
-            <p>
-              Bookmarks and review decisions stay in this browser. The review
-              queue uses sample drafts; there is no backend, shared moderation,
-              or automated clip discovery.
-            </p>
+            <p>Bookmarks stay in this browser.</p>
             <button className="button primary" onClick={() => setAbout(false)}>
               Got it. Let’s talk ball. <ArrowRight size={16} />
             </button>
