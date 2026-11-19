@@ -21,6 +21,7 @@ function Ball({ className = '' }: { className?: string }) {
 
 export default function App() {
   const [hash, setHash] = useState(window.location.hash);
+  const [currentSlug, setCurrentSlug] = useState(() => TERMS.find(t => `#term-${t.slug}` === window.location.hash)?.slug || TERMS[0].slug);
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState('All terms');
   const [savedOnly, setSavedOnly] = useState(false);
@@ -34,13 +35,22 @@ export default function App() {
   const review = hash === '#review';
   const terms = getTerms(collection);
   const visible = terms.filter(t => matches(t, query) && (category === 'All terms' || categories[t.slug] === category) && (!savedOnly || collection.saved.includes(t.slug)));
-  const current = terms.find(t => `#term-${t.slug}` === hash) || terms[0];
+  const current = terms.find(t => t.slug === currentSlug) || terms[0];
   const term = visible.find(t => t.slug === current.slug) || visible[0];
   const drafts = QUEUE.filter(d => !collection.approved.includes(d.id) && !collection.rejected.includes(d.id));
   const ready = drafts.filter(d => d.clipReady).length;
   const totalClips = terms.reduce((n, t) => n + t.clips.length, 0);
 
-  useEffect(() => { const route = () => { setHash(window.location.hash); setPlaying(null); }; window.addEventListener('hashchange', route); return () => window.removeEventListener('hashchange', route); }, []);
+  useEffect(() => {
+    const route = () => {
+      const next = window.location.hash;
+      setHash(next);
+      if (next.startsWith('#term-')) setCurrentSlug(TERMS.find(t => `#term-${t.slug}` === next)?.slug || TERMS[0].slug);
+      setPlaying(null);
+    };
+    window.addEventListener('hashchange', route);
+    return () => window.removeEventListener('hashchange', route);
+  }, []);
   useEffect(() => {
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(collection)); }
     catch { setNotice('Your browser can’t save changes. They’ll last until this page closes.'); }

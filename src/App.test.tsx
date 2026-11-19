@@ -56,6 +56,16 @@ describe('dictionary', () => {
     route('#term-unknown');
     expect(screen.getByRole('heading', { name: /^butter\s*\.$/ })).toBeInTheDocument();
   });
+  it('preserves the selected term across section jumps and review navigation', () => {
+    route('#term-ghost-screen');
+    render(<App />);
+    route('#dictionary');
+    expect(screen.getByRole('heading', { name: /^ghost screen\s*\.$/ })).toBeInTheDocument();
+    route('#review');
+    expect(screen.getByRole('link', { name: 'Back to the dictionary' })).toHaveAttribute('href', '#term-ghost-screen');
+    route('#term-ghost-screen');
+    expect(screen.getByRole('heading', { name: /^ghost screen\s*\.$/ })).toBeInTheDocument();
+  });
 });
 describe('sample review queue', () => {
   it('requires a source and persists approval on the correct entry', () => {
