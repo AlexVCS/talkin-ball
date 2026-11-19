@@ -222,6 +222,7 @@ svg {
   box-shadow: 0 2px 0 var(--accent);
 }
 .search-box input {
+  text-overflow: ellipsis;
   width: 100%;
   min-width: 0;
   background: none;
@@ -1292,7 +1293,13 @@ svg {
     gap: 24px;
   }
   .result-count {
-    display: none;
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
   }
   .facts > div {
     grid-template-columns: 120px minmax(0, 1fr);
@@ -1742,6 +1749,25 @@ svg {
   }
   .site-footer > button {
     font-size: 12px;
+    min-height: 44px;
+  }
+}
+@media (max-width: 800px), (max-width: 1024px) and (pointer: coarse) {
+  .diagram figcaption {
+    font-size: 14px;
+  }
+  .facts dt,
+  .entry-topline,
+  .diagram-top,
+  .part-of-speech,
+  .verified,
+  .clip-attribution strong,
+  .clip-attribution small,
+  .related-terms small {
+    font-size: 12px;
+  }
+  .term-button,
+  .category-tabs button {
     min-height: 44px;
   }
 }

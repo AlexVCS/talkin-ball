@@ -16,6 +16,34 @@ const route = (hash: string) =>
   });
 
 describe("dictionary", () => {
+  it("reveals the selected phone chip on direct links and navigation", () => {
+    const width = window.innerWidth;
+    window.innerWidth = 390;
+    try {
+      route("#term-blender");
+      render(<App />);
+      const scroll = vi.mocked(Element.prototype.scrollIntoView);
+      expect(scroll.mock.contexts).toContain(
+        document.querySelector('.term-button[aria-current="true"]'),
+      );
+      route("#term-gortat-screen");
+      expect(scroll.mock.contexts).toContain(
+        document.querySelector('.term-button[aria-current="true"]'),
+      );
+      expect(scroll).toHaveBeenCalledWith({
+        block: "nearest",
+        inline: "nearest",
+      });
+      fireEvent.change(screen.getByRole("searchbox"), {
+        target: { value: "zzzzzz" },
+      });
+      expect(
+        document.querySelector('.term-button[aria-current="true"]'),
+      ).toBeNull();
+    } finally {
+      window.innerWidth = width;
+    }
+  });
   it("explains when a term has no source clips", () => {
     const getTerms = vi
       .spyOn(model, "getTerms")

@@ -127,6 +127,16 @@ export default function App() {
   const ready = drafts.filter((d) => d.clipReady).length;
 
   useEffect(() => {
+    if (window.innerWidth <= 580 && hash.startsWith("#term-"))
+      document
+        .querySelector('.term-button[aria-current="true"]')
+        ?.scrollIntoView({
+          block: "nearest",
+          inline: "nearest",
+        });
+  }, [term?.slug, hash]);
+
+  useEffect(() => {
     const route = () => {
       const next = window.location.hash;
       setHash(next);
