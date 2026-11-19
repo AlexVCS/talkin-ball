@@ -12,7 +12,7 @@ const parseCookies = (header = "") =>
       .split(";")
       .map((c) => c.trim().split("="))
       .filter(([k, v]) => k && v !== undefined)
-      .map(([k, ...v]) => [k, decodeURIComponent(v.join("="))]),
+      .map(([k, ...v]) => [k, v.join("=")]),
   );
 
 export function createApi(env = process.env, fetchImpl = globalThis.fetch) {

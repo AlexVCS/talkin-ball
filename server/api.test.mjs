@@ -108,3 +108,11 @@ describe("admin API", () => {
     );
   });
 });
+
+describe("cookie parsing", () => {
+  it("ignores unrelated cookies with stray percent signs", async () => {
+    const api = createApi(ENV, github("AlexVCS"));
+    const res = await call(api, "GET", "/api/session", "other=100%; x=%E0");
+    expect(res.status).toBe(200);
+  });
+});
