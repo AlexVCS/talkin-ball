@@ -1,5 +1,5 @@
 import { act, fireEvent, render, screen, within } from "@testing-library/react";
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import App from "./App";
 import { STORAGE_KEY } from "./model";
 
@@ -254,5 +254,20 @@ describe("saved terms", () => {
     expect(
       screen.getByRole("heading", { name: /^ghost screen\s*\.$/ }),
     ).toBeInTheDocument();
+  });
+  it("keeps undo available when the browser can’t save", () => {
+    const setItem = vi
+      .spyOn(Storage.prototype, "setItem")
+      .mockImplementation(() => {
+        throw new Error("QuotaExceededError");
+      });
+    render(<App />);
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "Your browser can’t save changes.",
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Save butter" }));
+    fireEvent.click(screen.getByRole("button", { name: "Unsave butter" }));
+    expect(screen.getByRole("button", { name: "Undo" })).toBeInTheDocument();
+    setItem.mockRestore();
   });
 });
