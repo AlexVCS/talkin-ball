@@ -325,7 +325,18 @@ export default function App() {
                 role="img"
                 aria-label="basketball"
               >
-                <img src="/ball.svg" alt="" />
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <circle cx="12" cy="12" r="10" />
+                  <path d="M2 12h20M12 2v20M6 4c6 4 6 12 0 16M18 4c-6 4-6 12 0 16" />
+                </svg>
               </span>{" "}
               game, and thought,
               <br />

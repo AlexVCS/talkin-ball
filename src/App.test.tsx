@@ -322,6 +322,10 @@ describe("Paper layout", () => {
       "Ever watched a game, and thought,what are they talkin’ bout?",
     );
     expect(screen.getByRole("img", { name: "basketball" })).toBeInTheDocument();
+    const ball = screen.getByRole("img", { name: "basketball" });
+    expect(ball.querySelector("img")).toBeNull();
+    expect(ball.querySelector("svg")).toHaveAttribute("stroke", "currentColor");
+    expect(ball.querySelector("svg")).toHaveAttribute("fill", "none");
     expect(
       screen.getByRole("heading", { name: "The playbook" }),
     ).toBeInTheDocument();
