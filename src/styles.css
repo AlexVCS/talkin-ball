@@ -487,6 +487,7 @@ svg {
 }
 .orange,
 .legend-line {
+  flex-shrink: 0;
   color: var(--accent);
 }
 .defensive-line {
