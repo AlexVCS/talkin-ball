@@ -581,6 +581,9 @@ export default function App() {
                           : "SOURCE CLIPS"}
                       </span>
                     </div>
+                    {!term.clips.length && (
+                      <p>No source clips are available for this term yet.</p>
+                    )}
                     {term.clips.map((clip, i) => (
                       <ClipCard
                         key={`${clip.ep}-${clip.t}`}

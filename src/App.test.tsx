@@ -2,6 +2,8 @@ import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import App from "./App";
 import { STORAGE_KEY } from "./model";
+import * as model from "./model";
+import { TERMS } from "./data";
 
 beforeEach(() => {
   localStorage.clear();
@@ -42,6 +44,23 @@ describe("dictionary", () => {
       window.innerWidth = width;
     }
   });
+  it("explains when a term has no source clips", () => {
+    const getTerms = vi
+      .spyOn(model, "getTerms")
+      .mockReturnValue(TERMS.map((term) => ({ ...term, clips: [] })));
+    try {
+      const { container } = render(<App />);
+      expect(
+        screen.getByText("No source clips are available for this term yet."),
+      ).toBeInTheDocument();
+      expect(
+        container.querySelector(".clip-thumbnail"),
+      ).not.toBeInTheDocument();
+      expect(container.querySelector("iframe")).not.toBeInTheDocument();
+    } finally {
+      getTerms.mockRestore();
+    }
+  });
   it("announces search result counts including no matches", () => {
     render(<App />);
     expect(screen.getByRole("status")).toHaveTextContent(
@@ -72,7 +91,7 @@ describe("dictionary", () => {
       render(<App />);
       fireEvent.click(
         screen.getByRole("button", {
-          name: "FROM THE SOURCE Wizards TV broadcast 25:50",
+          name: "FROM THE SOURCE yikerzgame highlights 25:50",
         }),
       );
       expect(
@@ -135,10 +154,14 @@ describe("dictionary", () => {
     render(<App />);
     fireEvent.click(
       screen.getByRole("button", {
-        name: "FROM THE SOURCE Wizards TV broadcast 25:50",
+        name: "FROM THE SOURCE yikerzgame highlights 25:50",
       }),
     );
     const dialog = screen.getByRole("dialog");
+    expect(
+      within(dialog).getByRole("heading", { name: /Full Game Highlights/ }),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Game broadcast commentary")).toBeInTheDocument();
     expect(dialog.querySelector("iframe")).toHaveAttribute(
       "src",
       "https://www.youtube-nocookie.com/embed/o7EjgIyGeSY?start=1550&autoplay=1",
