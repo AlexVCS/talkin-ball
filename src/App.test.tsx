@@ -9,13 +9,13 @@ const route = (hash: string) => act(() => { window.history.replaceState(null, ''
 describe('dictionary', () => {
   it('opens a direct term link and searches aliases with no-result recovery', () => {
     render(<App />);
-    expect(screen.getByRole('heading', { name: 'butter.' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /^butter\s*\.$/ })).toBeInTheDocument();
     fireEvent.change(screen.getByRole('searchbox'), { target: { value: 'jail' } });
-    expect(screen.getByRole('heading', { name: 'hostage dribble.' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /^hostage dribble\s*\.$/ })).toBeInTheDocument();
     fireEvent.change(screen.getByRole('searchbox'), { target: { value: 'zzzzzz' } });
     expect(screen.getByText('That one’s not in the playbook. Yet.')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: /Explore all terms/ }));
-    expect(screen.getByRole('heading', { name: 'butter.' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /^butter\s*\.$/ })).toBeInTheDocument();
   });
   it('filters categories and persists saved entries across remounts', () => {
     const view = render(<App />);
@@ -26,7 +26,7 @@ describe('dictionary', () => {
     view.unmount();
     render(<App />);
     expect(screen.getByRole('button', { name: 'Unsave butter' })).toHaveAttribute('aria-pressed', 'true');
-    fireEvent.click(screen.getByRole('button', { name: 'Off-ball', exact: true }));
+    fireEvent.click(screen.getByRole('button', { name: 'Off-ball' }));
     expect(screen.getByLabelText('Basketball terms').querySelectorAll('.term-button')).toHaveLength(2);
   });
   it('opens a timestamped embed and supplies an external fallback', () => {
@@ -41,9 +41,9 @@ describe('dictionary', () => {
   it('follows browser hash navigation', () => {
     render(<App />);
     route('#term-court-mapping');
-    expect(screen.getByRole('heading', { name: 'court mapping.' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /^court mapping\s*\.$/ })).toBeInTheDocument();
     route('#term-unknown');
-    expect(screen.getByRole('heading', { name: 'butter.' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /^butter\s*\.$/ })).toBeInTheDocument();
   });
 });
 describe('sample review queue', () => {
