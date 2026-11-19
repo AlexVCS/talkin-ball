@@ -905,7 +905,7 @@ svg {
   max-width: calc(100vw - 30px);
   width: max-content;
   background: var(--text);
-  color: white;
+  color: var(--bg);
   display: flex;
   align-items: center;
   gap: 12px;
@@ -917,7 +917,7 @@ svg {
   animation: entry-in 0.2s;
 }
 .toast > svg {
-  color: #c6d7ab;
+  color: inherit;
 }
 .toast button {
   padding: 2px;
