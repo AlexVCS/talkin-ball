@@ -852,19 +852,20 @@ button {
   margin-top: 12px;
 }
 .diagram figcaption {
-  font-size: 8px;
+  font-size: 12px;
   line-height: 1.7;
-  color: #7d876f;
+  color: var(--text);
   padding-top: 10px;
 }
 .legend {
   margin-top: 11px;
-  border-top: 1px solid #d9dccd;
+  border-top: 1px solid var(--border);
   display: flex;
-  gap: 11px;
+  flex-wrap: wrap;
+  gap: 8px 11px;
   padding-top: 9px;
-  font-size: 7px;
-  color: #7a846d;
+  font-size: 11px;
+  color: var(--text);
 }
 .legend span {
   display: flex;
@@ -872,7 +873,14 @@ button {
   align-items: center;
 }
 .legend b {
-  color: #29362a;
+  color: var(--text);
+}
+.legend-line {
+  flex-shrink: 0;
+  color: var(--accent);
+}
+.legend-line.defensive-line {
+  color: var(--text-muted);
 }
 .orange {
   color: var(--accent);
@@ -1787,7 +1795,7 @@ button {
     margin: 6px 0;
   }
   .diagram figcaption {
-    font-size: 9px;
+    font-size: 12px;
     padding: 0;
     align-self: end;
   }
@@ -1796,7 +1804,7 @@ button {
     flex-wrap: wrap;
     align-self: start;
     gap: 4px 8px;
-    font-size: 7px;
+    font-size: 11px;
   }
   .shot-art {
     grid-row: 2/4;
@@ -2205,7 +2213,7 @@ button {
     font-size: 7px;
   }
   .diagram figcaption {
-    font-size: 9px;
+    font-size: 12px;
   }
   .shot-art {
     padding: 10px 5% 0;

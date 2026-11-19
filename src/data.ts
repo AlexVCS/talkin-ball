@@ -65,10 +65,11 @@ export const EP: Record<string, Episode> = {
   },
   wizdet: {
     id: "o7EjgIyGeSY",
-    title: "Pistons at Wizards, Nov 12, 2026",
-    show: "Wizards TV broadcast",
-    hosts: "John Wall & Drew Gooden",
-    season: "2026–27 season",
+    title:
+      "Detroit Pistons vs Washington Wizards Full Game Highlights - November 12, 2026 | NBA",
+    show: "yikerzgame highlights",
+    hosts: "yikerzgame (uploader)",
+    season: "November 12, 2026",
   },
 };
 export const fmt = (s: number) =>
@@ -82,10 +83,9 @@ export const TERMS: Term[] = [
     aka: [],
     def: "A late shot clock: about six or seven seconds or less. The booth calls it when the offense has to get a shot up.",
     facts: {
-      "Who says it":
-        "Wizards TV booth (John Wall, Drew Gooden); also heard on Heat broadcasts",
-      Where: "Local TV broadcasts",
-      Era: "2026–27 season",
+      Source: "Third-party game highlights uploaded by yikerzgame",
+      Where: "YouTube",
+      Date: "November 12, 2026",
     },
     shot: {
       at: 7,
@@ -95,10 +95,10 @@ export const TERMS: Term[] = [
       {
         ep: "wizdet",
         t: 1550,
-        who: "Wizards TV booth",
+        who: "Game broadcast commentary",
         quote:
           "They’re butter. They probably think we was crazy.” “What’s butter?” “That’s terminology of a late-clock situation, usually six or seven seconds or under.",
-        ctx: "Q3, Bub Carrington working against the shot clock",
+        ctx: "Via third-party highlights uploaded by yikerzgame",
       },
     ],
     related: ["hostage-dribble"],
