@@ -217,7 +217,10 @@ export default function App() {
   }, []);
   useEffect(() => {
     if (!notice) return;
-    const timer = window.setTimeout(() => setNotice(""), 5000);
+    const timer = window.setTimeout(
+      () => setNoticeState(null),
+      notice.undo ? 10000 : 5000,
+    );
     return () => window.clearTimeout(timer);
   }, [notice]);
   useEffect(() => {
