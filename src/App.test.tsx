@@ -38,6 +38,17 @@ describe('dictionary', () => {
     fireEvent.click(within(dialog).getByRole('button', { name: 'Close dialog' }));
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
+  it('syncs another tab’s changes before making a new bookmark decision', () => {
+    render(<App />);
+    act(() => {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ saved: ['ghost-screen'], approved: ['bluff'], rejected: ['red'] }));
+      window.dispatchEvent(new StorageEvent('storage', { key: STORAGE_KEY }));
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Save butter' }));
+    expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!)).toEqual({ saved: ['ghost-screen', 'butter'], approved: ['bluff'], rejected: ['red'] });
+    act(() => { localStorage.clear(); window.dispatchEvent(new StorageEvent('storage', { key: null })); });
+    expect(screen.getByRole('button', { name: 'Save butter' })).toBeInTheDocument();
+  });
   it('follows browser hash navigation', () => {
     render(<App />);
     route('#term-court-mapping');

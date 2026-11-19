@@ -45,6 +45,13 @@ export default function App() {
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(collection)); }
     catch { setNotice('Your browser can’t save changes. They’ll last until this page closes.'); }
   }, [collection]);
+  useEffect(() => {
+    const syncCollection = (event: StorageEvent) => {
+      if (event.key === STORAGE_KEY || event.key === null) setCollection(readCollection());
+    };
+    window.addEventListener('storage', syncCollection);
+    return () => window.removeEventListener('storage', syncCollection);
+  }, []);
   useEffect(() => { if (!notice) return; const timer = window.setTimeout(() => setNotice(''), 5000); return () => window.clearTimeout(timer); }, [notice]);
   useEffect(() => {
     const shortcut = (e: KeyboardEvent) => { if (e.key === '/' && !(e.target instanceof HTMLInputElement) && !document.querySelector('dialog[open]')) { e.preventDefault(); searchRef.current?.focus(); } };
