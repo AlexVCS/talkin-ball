@@ -31,11 +31,11 @@ function call(api, method, path, cookie) {
 const cookies = (r) =>
   [r.headers["Set-Cookie"]].flat().map((c) => c.split(";")[0]);
 
-function github(login) {
+function github(login, id = login.toLowerCase() === "alexvcs" ? 49458917 : 1) {
   return vi.fn(async (url) =>
     url.includes("access_token")
       ? new Response(JSON.stringify({ access_token: "token" }))
-      : new Response(JSON.stringify({ login })),
+      : new Response(JSON.stringify({ login, id })),
   );
 }
 async function signIn(login, env = ENV) {
@@ -76,6 +76,20 @@ describe("admin API", () => {
     const { back } = await signIn("someone-else");
     expect(back.headers.Location).toBe("/?auth=denied#review");
     expect(cookies(back).some((c) => c.startsWith("tb_session=e"))).toBe(false);
+  });
+  it("checks the GitHub user id, not the login", async () => {
+    const { back } = await signIn("AlexVCS-reclaimed");
+    expect(back.headers.Location).toBe("/?auth=denied#review");
+    const api = createApi(ENV, github("AlexVCS", 999));
+    const start = await call(api, "GET", "/auth/github");
+    const state = new URL(start.headers.Location).searchParams.get("state");
+    const res = await call(
+      api,
+      "GET",
+      `/auth/github/callback?code=abc&state=${state}`,
+      cookies(start)[0],
+    );
+    expect(res.headers.Location).toBe("/?auth=denied#review");
   });
   it("rejects a mismatched OAuth state", async () => {
     const api = createApi(ENV, github("AlexVCS"));

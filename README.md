@@ -43,7 +43,7 @@ The production server serves `dist` at <http://localhost:4173>. Set `PORT` to us
 
 ### Admin sign-in
 
-The review queue is served only to the GitHub account in `ADMIN_GITHUB_LOGIN` (default `AlexVCS`). Register a GitHub OAuth App with the callback `<site URL>/auth/github/callback`, then set:
+The review queue is served only to the GitHub user id in `ADMIN_GITHUB_ID` (default `49458917`, AlexVCS; ids survive renames). Register a GitHub OAuth App with the callback `<site URL>/auth/github/callback`, then set:
 
 | Variable                           | Purpose                                                                      |
 | ---------------------------------- | ---------------------------------------------------------------------------- |

@@ -19,7 +19,8 @@ export function createApi(env = process.env, fetchImpl = globalThis.fetch) {
   const clientId = env.TALKIN_BALL_GITHUB_CLIENT_ID || env.GITHUB_CLIENT_ID;
   const clientSecret =
     env.TALKIN_BALL_GITHUB_CLIENT_SECRET || env.GITHUB_CLIENT_SECRET;
-  const adminLogin = (env.ADMIN_GITHUB_LOGIN || "AlexVCS").toLowerCase();
+  // GitHub user id of AlexVCS; ids survive renames, logins can be reclaimed.
+  const adminId = String(env.ADMIN_GITHUB_ID || "49458917");
   const secret =
     env.SESSION_SECRET ||
     (clientSecret
@@ -44,8 +45,7 @@ export function createApi(env = process.env, fetchImpl = globalThis.fetch) {
       `Max-Age=${maxAge}`,
       ...(origin(req).startsWith("https:") ? ["Secure"] : []),
     ].join("; ");
-  const isAdmin = (login) =>
-    typeof login === "string" && login.toLowerCase() === adminLogin;
+  const isAdmin = (id) => id !== undefined && String(id) === adminId;
 
   const readSession = (req) => {
     const raw = parseCookies(req.headers.cookie)[SESSION_COOKIE];
@@ -58,8 +58,7 @@ export function createApi(env = process.env, fetchImpl = globalThis.fetch) {
       return null;
     try {
       const session = JSON.parse(Buffer.from(payload, "base64url").toString());
-      if (session.exp < Date.now() / 1000 || !isAdmin(session.login))
-        return null;
+      if (session.exp < Date.now() / 1000 || !isAdmin(session.id)) return null;
       return session;
     } catch {
       return null;
@@ -115,10 +114,11 @@ export function createApi(env = process.env, fetchImpl = globalThis.fetch) {
           "User-Agent": "talkin-ball",
         },
       }).then((r) => (r.ok ? r.json() : {}));
-      if (!isAdmin(user.login))
+      if (!isAdmin(user.id))
         return redirect(res, "/?auth=denied#review", [clearState]);
       const payload = b64(
         JSON.stringify({
+          id: user.id,
           login: user.login,
           exp: Math.floor(Date.now() / 1000) + SESSION_TTL,
         }),
