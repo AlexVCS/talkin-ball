@@ -254,7 +254,7 @@ export default function App() {
           review
             ? (event) => {
                 event.preventDefault();
-                document.getElementById("review-main")?.focus();
+                document.getElementById("review")?.focus();
               }
             : jumpToDictionary
         }
@@ -624,7 +624,7 @@ export default function App() {
           </main>
         </>
       ) : (
-        <main id="review-main" className="review-page" tabIndex={-1}>
+        <main id="review" className="review-page" tabIndex={-1}>
           <a className="back-link" href={`#term-${current.slug}`}>
             <ArrowLeft size={15} /> Back to the dictionary
           </a>
