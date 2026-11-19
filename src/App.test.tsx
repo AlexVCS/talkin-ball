@@ -319,13 +319,13 @@ describe("Paper layout", () => {
   it("keeps the approved heading and the real review drafts", () => {
     render(<App />);
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(
-      "Ever watched a game, and thought,what are they talkin’ bout?",
+      "Ever watched a 🏀 game, and thought,what are they talkin’ bout?",
     );
     expect(screen.getByRole("img", { name: "basketball" })).toBeInTheDocument();
     const ball = screen.getByRole("img", { name: "basketball" });
     expect(ball.querySelector("img")).toBeNull();
-    expect(ball.querySelector("svg")).toHaveAttribute("stroke", "currentColor");
-    expect(ball.querySelector("svg")).toHaveAttribute("fill", "none");
+    expect(ball.querySelector("svg")).toBeNull();
+    expect(ball).toHaveTextContent("🏀");
     expect(
       screen.getByRole("heading", { name: "The playbook" }),
     ).toBeInTheDocument();
