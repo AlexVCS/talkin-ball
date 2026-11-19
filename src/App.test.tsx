@@ -247,6 +247,22 @@ describe("dictionary", () => {
   });
 });
 describe("Paper layout", () => {
+  it("reveals preview drafts even when a previous queue filter excluded them", () => {
+    route("#review");
+    render(<App />);
+    fireEvent.click(screen.getByRole("button", { name: /Needs a clip/ }));
+    expect(document.querySelectorAll(".draft-card")).toHaveLength(2);
+    route("#term-butter");
+    fireEvent.click(screen.getByRole("link", { name: /^bluff screen/ }));
+    route("#review");
+    expect(screen.getByRole("button", { name: /All drafts/ })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+    expect(
+      screen.getByRole("heading", { name: /^bluff screen/ }),
+    ).toBeInTheDocument();
+  });
   it("keeps the approved heading and the real review drafts", () => {
     render(<App />);
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(

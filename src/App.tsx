@@ -575,7 +575,12 @@ export default function App() {
                 <p>Drafts need a clip before they go in the book.</p>
               </div>
               {drafts.map((draft) => (
-                <a className="queue-preview-row" href="#review" key={draft.id}>
+                <a
+                  className="queue-preview-row"
+                  href="#review"
+                  key={draft.id}
+                  onClick={() => setQueueFilter("All drafts")}
+                >
                   <h3>{displayTerm(draft)}</h3>
                   <span className="queue-preview-kind">{draft.kind}</span>
                   <p>{draft.def}</p>
