@@ -161,9 +161,8 @@ svg {
   color: var(--accent);
 }
 .hero {
-  min-height: 320px;
   padding-top: 32px;
-  padding-bottom: 32px;
+  padding-bottom: 24px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -184,6 +183,7 @@ svg {
   vertical-align: 0.02em;
 }
 .dictionary {
+  padding-top: 48px;
   padding-bottom: 80px;
 }
 .section-heading {
@@ -1448,10 +1448,8 @@ svg {
   .main-nav a {
     font-size: 13px;
   }
-  .hero {
-    min-height: 244px;
+  .dictionary {
     padding-top: 32px;
-    padding-bottom: 32px;
   }
   .hero h1 {
     font-size: clamp(32px, 8.6vw, 48px);
