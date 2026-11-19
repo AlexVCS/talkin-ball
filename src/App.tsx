@@ -34,6 +34,7 @@ import {
   type Collection,
 } from "./model";
 import Diagram from "./Diagram";
+import ThemeToggle from "./ThemeToggle";
 
 function Modal({
   title,
@@ -285,6 +286,7 @@ export default function App() {
           <button className="about-link" onClick={() => setAbout(true)}>
             What’s the story? <ArrowUpRight size={15} />
           </button>
+          <ThemeToggle />
         </div>
       </header>
 
