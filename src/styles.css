@@ -18,7 +18,7 @@
 }
 @font-face {
   font-family: "Talkin Ball Emoji";
-  src: url("/fonts/noto-color-emoji-basketball.ttf") format("truetype");
+  src: url("/fonts/noto-color-emoji-basketball.woff2") format("woff2");
   font-weight: 400;
   font-display: swap;
   unicode-range: U+1F3C0;
