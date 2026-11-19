@@ -6,14 +6,12 @@ import {
   type ReactNode,
 } from "react";
 import {
-  ArrowDown,
   ArrowLeft,
   ArrowRight,
   ArrowUpRight,
   Bookmark,
   Check,
   CheckCheck,
-  ChevronRight,
   CircleCheck,
   Clock3,
   ExternalLink,
@@ -36,6 +34,7 @@ import {
   type Collection,
 } from "./model";
 import Diagram from "./Diagram";
+import ThemeToggle from "./ThemeToggle";
 
 type Admin =
   | { status: "loading" }
@@ -153,52 +152,6 @@ function Modal({
   );
 }
 
-function Ball({ className = "" }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 300 300" className={className} aria-hidden="true">
-      <defs>
-        <radialGradient
-          id={`ball-shade-${className}`}
-          cx="32%"
-          cy="27%"
-          r="76%"
-        >
-          <stop stopColor="#ff9a46" />
-          <stop offset=".65" stopColor="#f15a29" />
-          <stop offset="1" stopColor="#bc3619" />
-        </radialGradient>
-        <pattern
-          id="pebbles"
-          width="5"
-          height="5"
-          patternUnits="userSpaceOnUse"
-        >
-          <circle cx="2" cy="2" r=".7" fill="#522612" opacity=".22" />
-        </pattern>
-        <clipPath id="ball-clip">
-          <circle cx="150" cy="150" r="142" />
-        </clipPath>
-      </defs>
-      <circle
-        cx="150"
-        cy="150"
-        r="142"
-        fill={`url(#ball-shade-${className})`}
-      />
-      <circle cx="150" cy="150" r="142" fill="url(#pebbles)" />
-      <g
-        clipPath="url(#ball-clip)"
-        fill="none"
-        stroke="#522d20"
-        strokeWidth="3.5"
-      >
-        <path d="M-15 180Q150 92 315 180M154-10Q80 150 154 310M-5 10Q285 50 280 300M0 292Q-20 30 290-10" />
-        <circle cx="150" cy="150" r="142" />
-      </g>
-    </svg>
-  );
-}
-
 export default function App() {
   const [hash, setHash] = useState(window.location.hash);
   const [currentSlug, setCurrentSlug] = useState(
@@ -209,6 +162,7 @@ export default function App() {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("All terms");
   const [savedOnly, setSavedOnly] = useState(false);
+  const focusSelectedEntry = useRef<string | null>(null);
   const [collection, setCollection] = useState<Collection>(readCollection);
   const [notice, setNoticeState] = useState<Notice | null>(null);
   const setNotice = (text: string, undo?: () => void) =>
@@ -245,7 +199,6 @@ export default function App() {
       !collection.rejected.includes(d.id),
   );
   const ready = drafts.filter((d) => d.clipReady).length;
-  const totalClips = terms.reduce((n, t) => n + t.clips.length, 0);
 
   useEffect(() => {
     if (window.innerWidth <= 580 && hash.startsWith("#term-"))
@@ -255,6 +208,13 @@ export default function App() {
           block: "nearest",
           inline: "nearest",
         });
+    if (focusSelectedEntry.current === term?.slug) {
+      (
+        document.querySelector<HTMLElement>(".term-entry") ||
+        document.getElementById("dictionary")
+      )?.focus({ preventScroll: true });
+      focusSelectedEntry.current = null;
+    }
   }, [term?.slug, hash]);
 
   useEffect(() => {
@@ -333,8 +293,15 @@ export default function App() {
   useEffect(() => {
     const shortcut = (e: KeyboardEvent) => {
       if (
-        e.key === "/" &&
-        !(e.target instanceof HTMLInputElement) &&
+        ((e.key === "/" && !e.metaKey && !e.ctrlKey) ||
+          (e.key.toLowerCase() === "k" && (e.metaKey || e.ctrlKey))) &&
+        !e.altKey &&
+        searchRef.current &&
+        !(
+          e.target instanceof HTMLElement &&
+          (e.target.isContentEditable ||
+            e.target.closest("input, textarea, select"))
+        ) &&
         !document.querySelector("dialog[open]")
       ) {
         e.preventDefault();
@@ -346,6 +313,7 @@ export default function App() {
   }, []);
 
   const selectTerm = (slug: string) => {
+    focusSelectedEntry.current = slug;
     setQuery("");
     setCategory("All terms");
     setSavedOnly(false);
@@ -429,10 +397,7 @@ export default function App() {
             onClick={clearFilters}
             aria-label="Talkin’ Ball home"
           >
-            <img src="/ball.svg" alt="" />
-            <span>
-              TALKIN’ BALL<span className="brand-dot">.</span>
-            </span>
+            <span>Talkin’ Ball</span>
           </a>
           <nav className="main-nav" aria-label="Main navigation">
             <a
@@ -441,7 +406,7 @@ export default function App() {
               className={!review ? "active" : ""}
               aria-current={!review ? "page" : undefined}
             >
-              The dictionary
+              Dictionary
             </a>
             {isAdmin && (
               <a
@@ -449,148 +414,53 @@ export default function App() {
                 className={review ? "active" : ""}
                 aria-current={review ? "page" : undefined}
               >
-                Review queue <span className="nav-count">{drafts.length}</span>
+                Review queue{" "}
+                <span className="nav-count">
+                  {String(drafts.length).padStart(2, "0")}
+                </span>
               </a>
             )}
           </nav>
-          <button className="about-link" onClick={() => setAbout(true)}>
-            What’s the story? <ArrowUpRight size={15} />
-          </button>
+          <ThemeToggle />
         </div>
       </header>
 
       {!review ? (
         <>
           <section className="hero" aria-label="Welcome to Talkin’ Ball">
-            <div className="hero-copy">
-              <p className="eyebrow">
-                <span /> FOR THE LOVE OF THE GAME
-              </p>
-              <h1>
-                THE GAME HAS
-                <br />A LANGUAGE.
-                <br />
-                <span>LEARN IT.</span>
-              </h1>
-              <p>
-                From the broadcast booth to the locker room.
-                <br className="desktop-break" /> Real basketball language.
-                Explained by the people who live it.
-              </p>
-              <a
-                className="hero-cta"
-                href="#dictionary"
-                onClick={jumpToDictionary}
+            <h1>
+              Ever watched a{" "}
+              <span
+                className="headline-ball"
+                role="img"
+                aria-label="basketball"
               >
-                Get in the game <ArrowDown size={16} />
-              </a>
-              <div className="hero-edition">
-                VOL. 01 <span>THE BASKETBALL DICTIONARY</span>
-              </div>
-            </div>
-            <div className="hero-art">
-              <div className="hero-court" aria-hidden="true">
-                <div className="court-center" />
-                <div className="court-key" />
-                <div className="court-arc" />
-              </div>
-              <span className="art-label">
-                <span className="live-dot" /> ALWAYS TALKIN’ HOOPS
-              </span>
-              <div className="ball-shadow" />
-              <Ball className="hero-ball" />
-              <button
-                className="floating-tag tag-one"
-                onClick={() => selectTerm("hostage-dribble")}
-              >
-                <span>01</span> HOSTAGE DRIBBLE <ArrowUpRight size={15} />
-              </button>
-              <button
-                className="floating-tag tag-two"
-                onClick={() => selectTerm("ghost-screen")}
-              >
-                <span>02</span> GHOST SCREEN <ArrowUpRight size={15} />
-              </button>
-              <div className="art-footer">
-                <span>
-                  MORE THAN A GAME.
-                  <br />A WHOLE CONVERSATION.
-                </span>
-                <span className="art-coordinates">
-                  EST. 2026
-                  <br />
-                  94 FT × 50 FT
-                </span>
-              </div>
-            </div>
+                🏀
+              </span>{" "}
+              game, and thought,
+              <br />
+              <span>what are they talkin’ bout?</span>
+            </h1>
           </section>
-          <div
-            className="proof-strip"
-            role="region"
-            aria-label="Dictionary at a glance"
-          >
-            <div>
-              <CircleCheck size={15} />
-              <strong>{terms.length}</strong> clip-backed terms
-            </div>
-            <span className="strip-dot">·</span>
-            <div>
-              <Play size={14} />
-              <strong>{totalClips}</strong> moments from the source
-            </div>
-            <span className="strip-dot">·</span>
-            <div className="proof-last">No hot takes. Just hoops.</div>
-            <span className="strip-right">
-              THE WORD IS ON THE COURT <ArrowDown size={13} />
-            </span>
-          </div>
-
           <main id="dictionary" className="dictionary" tabIndex={-1}>
             <div className="section-heading">
               <div>
-                <p className="eyebrow">THE DICTIONARY</p>
-                <h2>Talk the talk.</h2>
+                <h2>The playbook</h2>
               </div>
-              <button
-                className="text-button"
-                onClick={() => {
-                  const others = terms.filter((t) => t.slug !== current.slug);
-                  selectTerm(
-                    others[Math.floor(Math.random() * others.length)].slug,
-                  );
-                }}
-              >
-                <Shuffle size={15} /> Put me on to something{" "}
-                <ArrowUpRight size={15} />
-              </button>
-            </div>
-            <div className="search-toolbar">
-              <label className="search-box">
-                <Search size={20} />
-                <input
-                  ref={searchRef}
-                  type="search"
-                  placeholder={
-                    "Heard something? Search a term, like “jail” or “ghost”"
-                  }
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  aria-label="Search basketball terms"
-                />
-                <kbd>/</kbd>
-              </label>
-              <button
-                className={`saved-toggle ${savedOnly ? "selected" : ""}`}
-                aria-pressed={savedOnly}
-                onClick={() => setSavedOnly(!savedOnly)}
-              >
-                <Bookmark
-                  size={17}
-                  fill={savedOnly ? "currentColor" : "none"}
-                />
-                <span>My saved</span>
-                <b>{collection.saved.length}</b>
-              </button>
+              <div className="search-toolbar">
+                <label className="search-box">
+                  <input
+                    ref={searchRef}
+                    aria-keyshortcuts="/ Meta+K Control+K"
+                    type="search"
+                    placeholder={"Heard something? Search a term"}
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    aria-label="Search basketball terms"
+                  />
+                  <kbd>/</kbd>
+                </label>
+              </div>
             </div>
             <div className="filter-row">
               <div
@@ -605,11 +475,31 @@ export default function App() {
                     onClick={() => setCategory(c)}
                     aria-pressed={category === c}
                   >
-                    {c}
+                    {c === "All terms" ? "All" : c}{" "}
+                    <span className="filter-count">
+                      {String(
+                        terms.filter(
+                          (t) => c === "All terms" || categories[t.slug] === c,
+                        ).length,
+                      ).padStart(2, "0")}
+                    </span>
                   </button>
                 ))}
               </div>
-              <span role="status" aria-atomic="true">
+              <button
+                className={`saved-toggle ${savedOnly ? "selected" : ""}`}
+                aria-pressed={savedOnly}
+                onClick={() => setSavedOnly(!savedOnly)}
+              >
+                <Bookmark
+                  size={17}
+                  fill={savedOnly ? "currentColor" : "none"}
+                />
+                <span>Saved</span>
+                <b>{String(collection.saved.length).padStart(2, "0")}</b>
+              </button>
+
+              <span className="result-count" role="status">
                 {visible.length} {visible.length === 1 ? "term" : "terms"} in
                 the playbook
               </span>
@@ -617,8 +507,9 @@ export default function App() {
             <div className="dictionary-layout">
               <aside className="term-index" aria-label="Basketball terms">
                 <div className="index-label">
-                  <span>THE PLAYBOOK</span>
-                  <span>{String(visible.length).padStart(2, "0")}</span>
+                  <span>No.</span>
+                  <span>Term</span>
+                  <span>Clips</span>
                 </div>
                 {visible.map((t, i) => (
                   <button
@@ -634,13 +525,9 @@ export default function App() {
                     </span>
                     <span>
                       <strong>{displayTerm(t)}</strong>
-                      <small>
-                        {t.clips.length}{" "}
-                        {t.clips.length === 1 ? "clip" : "clips"}
-                        <span> · {categories[t.slug]}</span>
-                      </small>
+                      <small>{categories[t.slug]}</small>
                     </span>
-                    <ChevronRight size={15} />
+                    <span className="term-clips">{t.clips.length}</span>
                   </button>
                 ))}
                 {!visible.length && (
@@ -656,33 +543,20 @@ export default function App() {
                     )}
                   </p>
                 )}
-                <div className="index-note">
-                  <span className="mini-ball">✳</span>
-                  <p>
-                    Less guessing.
-                    <br />
-                    <strong>More understanding.</strong>
-                  </p>
-                </div>
               </aside>
               {term ? (
-                <article className="term-entry" key={term.slug}>
+                <article className="term-entry" key={term.slug} tabIndex={-1}>
                   <div className="entry-topline">
-                    <span>
-                      <i /> {categories[term.slug].toUpperCase()}
-                    </span>
                     <span>
                       ENTRY{" "}
                       {String(
                         TERMS.findIndex((t) => t.slug === term.slug) + 1,
-                      ).padStart(3, "0")}
+                      ).padStart(3, "0")}{" "}
+                      · {categories[term.slug].toUpperCase()}
                     </span>
                   </div>
                   <div className="entry-heading">
-                    <h2>
-                      {displayTerm(term)}
-                      <span>.</span>
-                    </h2>
+                    <h2>{displayTerm(term)}</h2>
                     <button
                       className={`bookmark-button ${collection.saved.includes(term.slug) ? "is-saved" : ""}`}
                       onClick={() => save(term.slug)}
@@ -698,14 +572,6 @@ export default function App() {
                         }
                       />
                     </button>
-                  </div>
-                  <div className="term-meta">
-                    <span className="part-of-speech">
-                      basketball vernacular
-                    </span>
-                    <span className="verified">
-                      <CheckCheck size={14} /> Clip-backed
-                    </span>
                   </div>
                   {!!term.aka.length && (
                     <p className="aliases">
@@ -731,7 +597,7 @@ export default function App() {
                   </div>
                   <section className="clips-section">
                     <div className="subsection-title">
-                      <h3>Don’t take our word for it.</h3>
+                      <h3>From the source</h3>
                       <span>
                         {term.clips.length}{" "}
                         {term.clips.length === 1
@@ -805,6 +671,57 @@ export default function App() {
                 </div>
               )}
             </div>
+            <div className="discovery-action">
+              <button
+                className="text-button"
+                onClick={() => {
+                  const others = terms.filter((t) => t.slug !== current.slug);
+                  selectTerm(
+                    others[Math.floor(Math.random() * others.length)].slug,
+                  );
+                }}
+              >
+                <Shuffle size={15} /> Put me on to something{" "}
+                <ArrowUpRight size={15} />
+              </button>
+            </div>
+            {isAdmin && (
+              <section
+                className="queue-preview"
+                aria-labelledby="queue-preview-title"
+              >
+                <div className="queue-preview-heading">
+                  <h2 id="queue-preview-title">In review</h2>
+                  <p>Drafts need a clip before they go in the book.</p>
+                </div>
+                {drafts.map((draft) => (
+                  <a
+                    className="queue-preview-row"
+                    href="#review"
+                    key={draft.id}
+                    onClick={() => setQueueFilter("All drafts")}
+                  >
+                    <h3>{displayTerm(draft)}</h3>
+                    <span className="queue-preview-kind">{draft.kind}</span>
+                    <p>{draft.def}</p>
+                    <span className="queue-preview-count">
+                      {draft.sources.filter((source) => source.ep).length}{" "}
+                      {draft.sources.filter((source) => source.ep).length === 1
+                        ? "clip"
+                        : "clips"}
+                    </span>
+                    <span className="queue-preview-link">
+                      Review draft <ArrowUpRight size={14} />
+                    </span>
+                  </a>
+                ))}
+                {!drafts.length && (
+                  <p className="queue-preview-empty">
+                    All caught up. <a href="#review">View the review queue</a>
+                  </p>
+                )}
+              </section>
+            )}
           </main>
         </>
       ) : admin.status !== "admin" ? (
@@ -1006,20 +923,12 @@ export default function App() {
 
       <footer className="site-footer">
         <a className="brand" href="#term-butter" onClick={clearFilters}>
-          <img src="/ball.svg" alt="" />
-          <span>
-            TALKIN’ BALL<span className="brand-dot">.</span>
-          </span>
+          <span>Talkin’ Ball</span>
         </a>
-        <p>
-          For the ones who love the game
-          <br />
-          and want to know it a little better.
-        </p>
         <button onClick={() => setAbout(true)}>
           A little more about us <ArrowUpRight size={14} />
         </button>
-        <span>ALL GAME. NO GUESSWORK.</span>
+        <span>EVERY TERM BACKED BY THE CLIP WHERE IT WAS SAID</span>
       </footer>
       {notice && (
         <div className="toast" role="status">

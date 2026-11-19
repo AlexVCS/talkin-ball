@@ -51,7 +51,7 @@ describe("play diagrams", () => {
   it("renders the shot clock without a play legend", () => {
     const { container } = render(<Diagram term={TERMS[0]} />);
     expect(
-      screen.getByText("07", { selector: ".lit-digits" }),
+      screen.getByText(":07", { selector: ".lit-digits" }),
     ).toBeInTheDocument();
     expect(container.querySelector(".legend")).not.toBeInTheDocument();
   });
