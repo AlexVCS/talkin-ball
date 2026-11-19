@@ -390,7 +390,8 @@ export default function App() {
   };
   const signOut = async () => {
     try {
-      await fetch("/auth/signout", { method: "POST" });
+      const response = await fetch("/auth/signout", { method: "POST" });
+      if (!response.ok) throw new Error("Sign-out failed");
     } catch {
       return setNotice("Couldn’t sign out. Try again.");
     }

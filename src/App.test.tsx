@@ -322,6 +322,18 @@ describe("admin sign-in", () => {
     expect(window.location.hash).toBe("#term-butter");
   });
 });
+it("keeps the admin signed in when sign-out fails", async () => {
+  route("#review");
+  await renderAdmin();
+  vi.mocked(fetch).mockImplementationOnce(() => json({}, 500));
+  await act(async () => {
+    fireEvent.click(screen.getByRole("button", { name: "Sign out" }));
+  });
+  expect(screen.getByText("Couldn’t sign out. Try again.")).toBeInTheDocument();
+  expect(
+    screen.getByRole("link", { name: /Review queue/ }),
+  ).toBeInTheDocument();
+});
 describe("sample review queue", () => {
   it("skips to review content and retains focus after removing a draft", async () => {
     route("#review");
