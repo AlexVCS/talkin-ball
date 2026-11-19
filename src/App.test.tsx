@@ -90,7 +90,7 @@ describe("dictionary", () => {
     expect(
       within(dialog).getByRole("heading", { name: /Full Game Highlights/ }),
     ).toBeInTheDocument();
-    expect(screen.getByText("yikerzgame (uploader)")).toBeInTheDocument();
+    expect(screen.getByText("Game broadcast commentary")).toBeInTheDocument();
     expect(dialog.querySelector("iframe")).toHaveAttribute(
       "src",
       "https://www.youtube-nocookie.com/embed/o7EjgIyGeSY?start=1550&autoplay=1",

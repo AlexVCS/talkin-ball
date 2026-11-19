@@ -95,10 +95,10 @@ export const TERMS: Term[] = [
       {
         ep: "wizdet",
         t: 1550,
-        who: "yikerzgame (uploader)",
+        who: "Game broadcast commentary",
         quote:
           "They’re butter. They probably think we was crazy.” “What’s butter?” “That’s terminology of a late-clock situation, usually six or seven seconds or under.",
-        ctx: "Third-party game highlights",
+        ctx: "Via third-party highlights uploaded by yikerzgame",
       },
     ],
     related: ["hostage-dribble"],
