@@ -86,11 +86,11 @@ input {
   outline-offset: 5px;
 }
 button:focus-visible,
-a:focus-visible {
-  outline: 2px solid var(--text);
-}
+a:focus-visible,
 input:focus-visible {
   outline: 2px solid var(--text);
+  outline-offset: 3px;
+  box-shadow: 0 0 0 3px var(--bg);
 }
 h1,
 h2,
