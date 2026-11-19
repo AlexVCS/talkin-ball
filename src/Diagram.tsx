@@ -106,7 +106,7 @@ export default function Diagram({ term }: { term: Term }) {
               <path
                 d={`M${ax} ${ay}Q${cx ?? (+ax + +bx) / 2} ${cy ?? (+ay + +by) / 2} ${bx} ${by}`}
                 fill="none"
-                stroke={kind === "def" ? "#80877b" : "#f15a29"}
+                stroke={kind === "def" ? "var(--text-muted)" : "var(--accent)"}
                 strokeWidth="2.5"
                 strokeDasharray={
                   kind === "pass" || kind === "trail" ? "5 4" : undefined
@@ -120,14 +120,14 @@ export default function Diagram({ term }: { term: Term }) {
               {kind === "screen" && (
                 <path
                   d={`M${+bx - 8} ${by}h16`}
-                  stroke="#f15a29"
+                  stroke="var(--accent)"
                   strokeWidth="3"
                 />
               )}
             </g>
           ))}
           {term.play?.x.map(([n, x, y]) => (
-            <g key={n} stroke="#7b8275" strokeWidth="2">
+            <g key={n} stroke="var(--text-muted)" strokeWidth="2">
               <path d={`M${x - 5} ${y - 5}l10 10m0-10-10 10`} />
               <text
                 x={x + 8}

@@ -33,6 +33,49 @@ describe("dictionary", () => {
       getTerms.mockRestore();
     }
   });
+  it("announces search result counts including no matches", () => {
+    render(<App />);
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "6 terms in the playbook",
+    );
+    fireEvent.change(screen.getByRole("searchbox"), {
+      target: { value: "zzzz" },
+    });
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "0 terms in the playbook",
+    );
+  });
+  it("restores dialog focus and handles Escape cancellation", () => {
+    render(<App />);
+    const trigger = screen.getByRole("button", { name: "What’s the story?" });
+    trigger.focus();
+    fireEvent.click(trigger);
+    fireEvent(
+      screen.getByRole("dialog"),
+      new Event("cancel", { bubbles: false }),
+    );
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(trigger).toHaveFocus();
+  });
+  it("does not autoplay clips when reduced motion is requested", () => {
+    vi.stubGlobal("matchMedia", () => ({ matches: true }));
+    try {
+      render(<App />);
+      fireEvent.click(
+        screen.getByRole("button", {
+          name: "FROM THE SOURCE yikerzgame highlights 25:50",
+        }),
+      );
+      expect(
+        screen.getByRole("dialog").querySelector("iframe"),
+      ).toHaveAttribute(
+        "src",
+        "https://www.youtube-nocookie.com/embed/o7EjgIyGeSY?start=1550&autoplay=0",
+      );
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
   it("opens a direct term link and searches aliases with no-result recovery", () => {
     render(<App />);
     expect(
@@ -83,7 +126,7 @@ describe("dictionary", () => {
     render(<App />);
     fireEvent.click(
       screen.getByRole("button", {
-        name: "Play yikerzgame highlights at 25:50",
+        name: "FROM THE SOURCE yikerzgame highlights 25:50",
       }),
     );
     const dialog = screen.getByRole("dialog");
@@ -173,6 +216,18 @@ describe("dictionary", () => {
   });
 });
 describe("sample review queue", () => {
+  it("skips to review content and retains focus after removing a draft", () => {
+    route("#review");
+    render(<App />);
+    const skip = screen.getByRole("link", { name: "Skip to review queue" });
+    expect(skip).toHaveAttribute("href", "#review");
+    fireEvent.click(skip);
+    expect(window.location.hash).toBe("#review");
+    expect(screen.getByRole("main")).toHaveFocus();
+    fireEvent.click(screen.getAllByRole("button", { name: "Reject" })[0]);
+    expect(document.getElementById("queue-controls")).toHaveFocus();
+    expect(screen.getByRole("status")).toHaveTextContent("Draft rejected");
+  });
   it("requires a source and persists approval on the correct entry", () => {
     route("#review");
     const view = render(<App />);
@@ -187,7 +242,9 @@ describe("sample review queue", () => {
     route("#term-ghost-screen");
     expect(screen.getByText("2 SOURCE CLIPS")).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: "Play Mind the Game at 29:59" }),
+      screen.getByRole("button", {
+        name: "FROM THE SOURCE Mind the Game 29:59",
+      }),
     ).toBeInTheDocument();
     view.unmount();
     render(<App />);
