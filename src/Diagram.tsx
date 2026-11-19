@@ -2,8 +2,21 @@ import { useState } from "react";
 import { RotateCcw } from "lucide-react";
 import type { Term } from "./data";
 
+const lineLabels: Record<string, string> = {
+  pass: "Pass",
+  screen: "Screen",
+  cut: "Cut / movement",
+  dribble: "Dribble",
+  trail: "Trailing defender",
+  def: "Defensive recovery",
+};
+
 export default function Diagram({ term }: { term: Term }) {
   const [replay, setReplay] = useState(0);
+  if (!term.shot && !term.play) return null;
+  const lineKinds = [
+    ...new Set(term.play?.moves.map(([kind]) => String(kind))),
+  ];
   return (
     <figure className={`diagram ${term.shot ? "clock-diagram" : ""}`}>
       <div className="diagram-top">
@@ -120,8 +133,8 @@ export default function Diagram({ term }: { term: Term }) {
                 x={x + 8}
                 y={y + 10}
                 stroke="none"
-                fontSize="8"
-                fill="#7b8275"
+                fontSize="12"
+                fill="var(--text)"
               >
                 {n}
               </text>
@@ -153,7 +166,38 @@ export default function Diagram({ term }: { term: Term }) {
             <b>●</b> Offense
           </span>
           <span>× Defense</span>
-          <span className="orange">⤴ Movement</span>
+          {lineKinds.map((kind) => (
+            <span key={kind}>
+              <svg
+                className={`legend-line ${kind === "def" ? "defensive-line" : ""}`}
+                viewBox="0 0 32 16"
+                width="32"
+                height="16"
+                aria-hidden="true"
+              >
+                <path
+                  d="M1 8H28"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeDasharray={
+                    kind === "pass" || kind === "trail" ? "5 4" : undefined
+                  }
+                />
+                {kind === "screen" ? (
+                  <path d="M28 2V14" stroke="currentColor" strokeWidth="3" />
+                ) : kind !== "trail" ? (
+                  <path
+                    d="m22 3 7 5-7 5"
+                    fill="none"
+                    stroke={kind === "def" ? "var(--accent)" : "currentColor"}
+                    strokeWidth="2"
+                  />
+                ) : null}
+              </svg>
+              {lineLabels[kind] || "Movement"}
+            </span>
+          ))}
         </div>
       )}
       {term.shot && (

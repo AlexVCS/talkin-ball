@@ -1,7 +1,9 @@
 import { act, fireEvent, render, screen, within } from "@testing-library/react";
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import App from "./App";
 import { STORAGE_KEY } from "./model";
+import * as model from "./model";
+import { TERMS } from "./data";
 
 beforeEach(() => {
   localStorage.clear();
@@ -14,6 +16,23 @@ const route = (hash: string) =>
   });
 
 describe("dictionary", () => {
+  it("explains when a term has no source clips", () => {
+    const getTerms = vi
+      .spyOn(model, "getTerms")
+      .mockReturnValue(TERMS.map((term) => ({ ...term, clips: [] })));
+    try {
+      const { container } = render(<App />);
+      expect(
+        screen.getByText("No source clips are available for this term yet."),
+      ).toBeInTheDocument();
+      expect(
+        container.querySelector(".clip-thumbnail"),
+      ).not.toBeInTheDocument();
+      expect(container.querySelector("iframe")).not.toBeInTheDocument();
+    } finally {
+      getTerms.mockRestore();
+    }
+  });
   it("opens a direct term link and searches aliases with no-result recovery", () => {
     render(<App />);
     expect(
@@ -64,10 +83,14 @@ describe("dictionary", () => {
     render(<App />);
     fireEvent.click(
       screen.getByRole("button", {
-        name: "Play Wizards TV broadcast at 25:50",
+        name: "Play yikerzgame highlights at 25:50",
       }),
     );
     const dialog = screen.getByRole("dialog");
+    expect(
+      within(dialog).getByRole("heading", { name: /Full Game Highlights/ }),
+    ).toBeInTheDocument();
+    expect(screen.getByText("yikerzgame (uploader)")).toBeInTheDocument();
     expect(dialog.querySelector("iframe")).toHaveAttribute(
       "src",
       "https://www.youtube-nocookie.com/embed/o7EjgIyGeSY?start=1550&autoplay=1",
