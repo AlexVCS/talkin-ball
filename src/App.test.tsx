@@ -247,6 +247,21 @@ describe("dictionary", () => {
   });
 });
 describe("Paper layout", () => {
+  it("moves shuffle focus to the new entry instead of skipping its controls", () => {
+    vi.spyOn(Math, "random").mockReturnValue(0);
+    render(<App />);
+    const shuffle = screen.getByRole("button", {
+      name: /Put me on to something/,
+    });
+    shuffle.focus();
+    fireEvent.click(shuffle);
+    route(window.location.hash);
+    expect(
+      screen.getByRole("heading", { name: "hostage dribble" }),
+    ).toBeInTheDocument();
+    expect(document.querySelector(".term-entry")).toHaveFocus();
+    vi.restoreAllMocks();
+  });
   it("reveals preview drafts even when a previous queue filter excluded them", () => {
     route("#review");
     render(<App />);

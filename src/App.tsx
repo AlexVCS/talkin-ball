@@ -93,6 +93,7 @@ export default function App() {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("All terms");
   const [savedOnly, setSavedOnly] = useState(false);
+  const focusSelectedEntry = useRef(false);
   const [collection, setCollection] = useState<Collection>(readCollection);
   const [notice, setNoticeState] = useState<Notice | null>(null);
   const setNotice = (text: string, undo?: () => void) =>
@@ -134,6 +135,13 @@ export default function App() {
           block: "nearest",
           inline: "nearest",
         });
+    if (focusSelectedEntry.current) {
+      (
+        document.querySelector<HTMLElement>(".term-entry") ||
+        document.getElementById("dictionary")
+      )?.focus({ preventScroll: true });
+      focusSelectedEntry.current = false;
+    }
   }, [term?.slug, hash]);
 
   useEffect(() => {
@@ -208,6 +216,7 @@ export default function App() {
   }, []);
 
   const selectTerm = (slug: string) => {
+    focusSelectedEntry.current = true;
     setQuery("");
     setCategory("All terms");
     setSavedOnly(false);
@@ -426,7 +435,7 @@ export default function App() {
                 )}
               </aside>
               {term ? (
-                <article className="term-entry" key={term.slug}>
+                <article className="term-entry" key={term.slug} tabIndex={-1}>
                   <div className="entry-topline">
                     <span>
                       ENTRY{" "}
