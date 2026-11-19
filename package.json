@@ -9,7 +9,9 @@
     "preview": "vite preview --host 0.0.0.0",
     "start": "node server.mjs",
     "test": "vitest run",
-    "typecheck": "tsc -b"
+    "typecheck": "tsc -b",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "keywords": [],
   "author": "",
@@ -29,6 +31,7 @@
     "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^4.7.0",
     "jsdom": "^26.1.0",
+    "prettier": "^3.10.1",
     "typescript": "^5.9.3",
     "vite": "^6.4.6",
     "vitest": "4.1.12"
