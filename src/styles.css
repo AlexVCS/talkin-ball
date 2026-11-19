@@ -922,6 +922,13 @@ svg {
   padding: 2px;
   color: var(--bg);
 }
+.toast .toast-action {
+  padding: 2px 4px;
+  color: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
 .review-page {
   padding-block: 40px 80px;
   min-height: 75vh;
