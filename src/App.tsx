@@ -149,7 +149,6 @@ export default function App() {
   const [queueFilter, setQueueFilter] = useState("All drafts");
   const [resetting, setResetting] = useState(false);
   const searchRef = useRef<HTMLInputElement>(null);
-  const storageWarned = useRef(false);
   const review = hash === "#review";
   const terms = getTerms(collection);
   const visible = terms.filter(
@@ -197,12 +196,14 @@ export default function App() {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(collection));
     } catch {
-      if (storageWarned.current) return;
-      storageWarned.current = true;
       const warning =
         "Your browser can’t save changes. They’ll last until this page closes.";
       setNoticeState((n) =>
-        n ? { ...n, text: `${n.text} ${warning}` } : { text: warning },
+        !n
+          ? { text: warning }
+          : n.text.includes(warning)
+            ? n
+            : { ...n, text: `${n.text} ${warning}` },
       );
     }
   }, [collection]);

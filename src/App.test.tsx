@@ -268,6 +268,9 @@ describe("saved terms", () => {
     fireEvent.click(screen.getByRole("button", { name: "Save butter" }));
     fireEvent.click(screen.getByRole("button", { name: "Unsave butter" }));
     expect(screen.getByRole("button", { name: "Undo" })).toBeInTheDocument();
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "Removed butter from My saved. Your browser can’t save changes.",
+    );
     setItem.mockRestore();
   });
 });
