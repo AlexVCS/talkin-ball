@@ -978,7 +978,7 @@ function ClipCard({
       <button
         className="clip-thumbnail"
         onClick={play}
-        aria-label={`Play ${episode.show} at ${fmt(clip.t)}`}
+        aria-label={`From the source: Play ${episode.show} at ${fmt(clip.t)}`}
       >
         <img
           src={`https://i.ytimg.com/vi/${episode.id}/hqdefault.jpg`}

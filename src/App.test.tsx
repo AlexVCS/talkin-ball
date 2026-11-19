@@ -44,7 +44,7 @@ describe("dictionary", () => {
       render(<App />);
       fireEvent.click(
         screen.getByRole("button", {
-          name: "Play Wizards TV broadcast at 25:50",
+          name: "From the source: Play Wizards TV broadcast at 25:50",
         }),
       );
       expect(
@@ -107,7 +107,7 @@ describe("dictionary", () => {
     render(<App />);
     fireEvent.click(
       screen.getByRole("button", {
-        name: "Play Wizards TV broadcast at 25:50",
+        name: "From the source: Play Wizards TV broadcast at 25:50",
       }),
     );
     const dialog = screen.getByRole("dialog");
@@ -219,7 +219,9 @@ describe("sample review queue", () => {
     route("#term-ghost-screen");
     expect(screen.getByText("2 SOURCE CLIPS")).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: "Play Mind the Game at 29:59" }),
+      screen.getByRole("button", {
+        name: "From the source: Play Mind the Game at 29:59",
+      }),
     ).toBeInTheDocument();
     view.unmount();
     render(<App />);
