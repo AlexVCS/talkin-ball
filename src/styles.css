@@ -1265,6 +1265,13 @@ button {
   padding: 2px;
   color: #ccd7bf;
 }
+.toast .toast-action {
+  padding: 2px 4px;
+  color: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
 .review-page {
   max-width: 1440px;
   margin: auto;

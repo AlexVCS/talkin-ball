@@ -35,6 +35,11 @@ import {
 } from "./model";
 import Diagram from "./Diagram";
 
+interface Notice {
+  text: string;
+  undo?: () => void;
+}
+
 function Modal({
   title,
   children,
@@ -136,7 +141,9 @@ export default function App() {
   const [category, setCategory] = useState("All terms");
   const [savedOnly, setSavedOnly] = useState(false);
   const [collection, setCollection] = useState<Collection>(readCollection);
-  const [notice, setNotice] = useState("");
+  const [notice, setNoticeState] = useState<Notice | null>(null);
+  const setNotice = (text: string, undo?: () => void) =>
+    setNoticeState(text ? { text, undo } : null);
   const [about, setAbout] = useState(false);
   const [playing, setPlaying] = useState<Clip | null>(null);
   const [queueFilter, setQueueFilter] = useState("All drafts");
@@ -150,6 +157,13 @@ export default function App() {
       (category === "All terms" || categories[t.slug] === category) &&
       (!savedOnly || collection.saved.includes(t.slug)),
   );
+  const hiddenBySaved =
+    savedOnly &&
+    terms.some(
+      (t) =>
+        matches(t, query) &&
+        (category === "All terms" || categories[t.slug] === category),
+    );
   const current = terms.find((t) => t.slug === currentSlug) || terms[0];
   const term = visible.find((t) => t.slug === current.slug) || visible[0];
   const drafts = QUEUE.filter(
@@ -234,13 +248,32 @@ export default function App() {
     dictionary?.scrollIntoView({ behavior: "smooth", block: "start" });
     dictionary?.focus({ preventScroll: true });
   };
-  const save = (slug: string) =>
+  const save = (slug: string) => {
+    if (!collection.saved.includes(slug)) {
+      setCollection((c) =>
+        c.saved.includes(slug) ? c : { ...c, saved: [...c.saved, slug] },
+      );
+      return;
+    }
     setCollection((c) => ({
       ...c,
-      saved: c.saved.includes(slug)
-        ? c.saved.filter((s) => s !== slug)
-        : [...c.saved, slug],
+      saved: c.saved.filter((s) => s !== slug),
     }));
+    const name = displayTerm(TERMS.find((t) => t.slug === slug)!);
+    setNotice(`Removed ${name} from My saved.`, () =>
+      setCollection((c) =>
+        c.saved.includes(slug) ? c : { ...c, saved: [...c.saved, slug] },
+      ),
+    );
+  };
+  const decide = (id: string, list: "approved" | "rejected", text: string) => {
+    setCollection((c) =>
+      c[list].includes(id) ? c : { ...c, [list]: [...c[list], id] },
+    );
+    setNotice(text, () =>
+      setCollection((c) => ({ ...c, [list]: c[list].filter((d) => d !== id) })),
+    );
+  };
   const clearFilters = () => {
     setQuery("");
     setCategory("All terms");
@@ -466,9 +499,15 @@ export default function App() {
                 ))}
                 {!visible.length && (
                   <p className="index-empty">
-                    No terms found.
-                    <br />
-                    Try another search.
+                    {savedOnly && !collection.saved.length ? (
+                      "No saved terms yet."
+                    ) : (
+                      <>
+                        No terms found.
+                        <br />
+                        Try another search.
+                      </>
+                    )}
                   </p>
                 )}
                 <div className="index-note">
@@ -589,18 +628,31 @@ export default function App() {
                 <div className="empty-state">
                   <Search size={36} />
                   <h2>
-                    {savedOnly && !collection.saved.length
-                      ? "Start your own playbook."
-                      : "That one’s not in the playbook. Yet."}
+                    {!savedOnly
+                      ? "That one’s not in the playbook. Yet."
+                      : collection.saved.length
+                        ? "None of your saved terms match."
+                        : "Start your own playbook."}
                   </h2>
                   <p>
-                    {savedOnly && !collection.saved.length
-                      ? "Tap the bookmark on any entry to keep it close."
-                      : "Try a different term, an alias, or a phrase you heard."}
+                    {!savedOnly
+                      ? "Try a different term, an alias, or a phrase you heard."
+                      : collection.saved.length
+                        ? "Search the whole playbook, or try a different filter."
+                        : "Tap the bookmark on any entry to keep it close."}
                   </p>
-                  <button className="button primary" onClick={clearFilters}>
-                    Explore all terms <ArrowRight size={16} />
-                  </button>
+                  {savedOnly && collection.saved.length && hiddenBySaved ? (
+                    <button
+                      className="button primary"
+                      onClick={() => setSavedOnly(false)}
+                    >
+                      Search all terms <ArrowRight size={16} />
+                    </button>
+                  ) : (
+                    <button className="button primary" onClick={clearFilters}>
+                      Explore all terms <ArrowRight size={16} />
+                    </button>
+                  )}
                 </div>
               )}
             </div>
@@ -731,11 +783,9 @@ export default function App() {
                         disabled={!d.clipReady}
                         onClick={() => {
                           if (!d.clipReady) return;
-                          setCollection((c) => ({
-                            ...c,
-                            approved: [...c.approved, d.id],
-                          }));
-                          setNotice(
+                          decide(
+                            d.id,
+                            "approved",
                             "Approved. The source clip is now on the ghost screen entry.",
                           );
                         }}
@@ -755,13 +805,7 @@ export default function App() {
                       <button
                         className="reject-button"
                         onClick={() => {
-                          setCollection((c) => ({
-                            ...c,
-                            rejected: [...c.rejected, d.id],
-                          }));
-                          setNotice(
-                            "Draft rejected. Use Reset sample queue to restore it.",
-                          );
+                          decide(d.id, "rejected", "Draft rejected.");
                         }}
                       >
                         Reject
@@ -821,7 +865,18 @@ export default function App() {
       {notice && (
         <div className="toast" role="status">
           <CircleCheck size={18} />
-          <span>{notice}</span>
+          <span>{notice.text}</span>
+          {notice.undo && (
+            <button
+              className="toast-action"
+              onClick={() => {
+                notice.undo?.();
+                setNotice("");
+              }}
+            >
+              Undo
+            </button>
+          )}
           <button
             onClick={() => setNotice("")}
             aria-label="Dismiss notification"

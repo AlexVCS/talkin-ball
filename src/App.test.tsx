@@ -190,4 +190,69 @@ describe("sample review queue", () => {
       "butter",
     ]);
   });
+  it("undoes a rejection without resetting other decisions", () => {
+    route("#review");
+    render(<App />);
+    const cards = document.querySelectorAll(".draft-card");
+    fireEvent.click(
+      within(cards[2] as HTMLElement).getByRole("button", { name: /Approve/ }),
+    );
+    fireEvent.click(screen.getAllByRole("button", { name: "Reject" })[0]);
+    expect(document.querySelectorAll(".draft-card")).toHaveLength(1);
+    fireEvent.click(screen.getByRole("button", { name: "Undo" }));
+    expect(document.querySelectorAll(".draft-card")).toHaveLength(2);
+    expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!)).toEqual({
+      saved: [],
+      approved: ["bluff"],
+      rejected: [],
+    });
+  });
+});
+describe("saved terms", () => {
+  it("offers undo after unsaving the entry open in My saved", () => {
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({
+        saved: ["butter", "ghost-screen"],
+        approved: [],
+        rejected: [],
+      }),
+    );
+    route("#term-ghost-screen");
+    render(<App />);
+    fireEvent.click(screen.getByRole("button", { name: /My saved/ }));
+    fireEvent.click(
+      screen.getByRole("button", { name: "Unsave ghost screen" }),
+    );
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "Removed ghost screen from My saved.",
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Undo" }));
+    expect(
+      screen.getByRole("heading", { name: /^ghost screen\s*\.$/ }),
+    ).toBeInTheDocument();
+    expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!).saved).toEqual([
+      "butter",
+      "ghost-screen",
+    ]);
+  });
+  it("explains when a search only misses saved terms", () => {
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({ saved: ["butter"], approved: [], rejected: [] }),
+    );
+    render(<App />);
+    fireEvent.click(screen.getByRole("button", { name: /My saved/ }));
+    fireEvent.change(screen.getByRole("searchbox"), {
+      target: { value: "ghost" },
+    });
+    expect(
+      screen.getByText("None of your saved terms match."),
+    ).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /Search all terms/ }));
+    expect(screen.getByRole("searchbox")).toHaveValue("ghost");
+    expect(
+      screen.getByRole("heading", { name: /^ghost screen\s*\.$/ }),
+    ).toBeInTheDocument();
+  });
 });
