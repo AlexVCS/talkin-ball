@@ -17,13 +17,13 @@ describe("dictionary", () => {
   it("opens a direct term link and searches aliases with no-result recovery", () => {
     render(<App />);
     expect(
-      screen.getByRole("heading", { name: /^butter\s*\.$/ }),
+      screen.getByRole("heading", { name: /^butter$/ }),
     ).toBeInTheDocument();
     fireEvent.change(screen.getByRole("searchbox"), {
       target: { value: "jail" },
     });
     expect(
-      screen.getByRole("heading", { name: /^hostage dribble\s*\.$/ }),
+      screen.getByRole("heading", { name: /^hostage dribble$/ }),
     ).toBeInTheDocument();
     fireEvent.change(screen.getByRole("searchbox"), {
       target: { value: "zzzzzz" },
@@ -33,7 +33,7 @@ describe("dictionary", () => {
     ).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: /Explore all terms/ }));
     expect(
-      screen.getByRole("heading", { name: /^butter\s*\.$/ }),
+      screen.getByRole("heading", { name: /^butter$/ }),
     ).toBeInTheDocument();
   });
   it("filters categories and persists saved entries across remounts", () => {
@@ -42,7 +42,7 @@ describe("dictionary", () => {
     expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!).saved).toEqual([
       "butter",
     ]);
-    fireEvent.click(screen.getByRole("button", { name: /My saved/ }));
+    fireEvent.click(screen.getByRole("button", { name: /Saved/ }));
     expect(
       screen
         .getByLabelText("Basketball terms")
@@ -53,7 +53,7 @@ describe("dictionary", () => {
     expect(
       screen.getByRole("button", { name: "Unsave butter" }),
     ).toHaveAttribute("aria-pressed", "true");
-    fireEvent.click(screen.getByRole("button", { name: "Off-ball" }));
+    fireEvent.click(screen.getByRole("button", { name: /^Off-ball/ }));
     expect(
       screen
         .getByLabelText("Basketball terms")
@@ -111,11 +111,11 @@ describe("dictionary", () => {
     render(<App />);
     route("#term-court-mapping");
     expect(
-      screen.getByRole("heading", { name: /^court mapping\s*\.$/ }),
+      screen.getByRole("heading", { name: /^court mapping$/ }),
     ).toBeInTheDocument();
     route("#term-unknown");
     expect(
-      screen.getByRole("heading", { name: /^butter\s*\.$/ }),
+      screen.getByRole("heading", { name: /^butter$/ }),
     ).toBeInTheDocument();
   });
   it("preserves the selected term across section jumps and review navigation", () => {
@@ -123,7 +123,7 @@ describe("dictionary", () => {
     render(<App />);
     route("#dictionary");
     expect(
-      screen.getByRole("heading", { name: /^ghost screen\s*\.$/ }),
+      screen.getByRole("heading", { name: /^ghost screen$/ }),
     ).toBeInTheDocument();
     route("#review");
     expect(
@@ -131,22 +131,80 @@ describe("dictionary", () => {
     ).toHaveAttribute("href", "#term-ghost-screen");
     route("#term-ghost-screen");
     expect(
-      screen.getByRole("heading", { name: /^ghost screen\s*\.$/ }),
+      screen.getByRole("heading", { name: /^ghost screen$/ }),
     ).toBeInTheDocument();
   });
   it("keeps a shareable term URL when jumping and restores it on reload", () => {
     route("#term-ghost-screen");
     const view = render(<App />);
-    fireEvent.click(screen.getByRole("link", { name: "Get in the game" }));
-    expect(window.location.hash).toBe("#term-ghost-screen");
-    expect(document.activeElement).toBe(screen.getByRole("main"));
     fireEvent.click(screen.getByRole("link", { name: "Skip to dictionary" }));
     expect(window.location.hash).toBe("#term-ghost-screen");
     view.unmount();
     render(<App />);
     expect(
-      screen.getByRole("heading", { name: /^ghost screen\s*\.$/ }),
+      screen.getByRole("heading", { name: /^ghost screen$/ }),
     ).toBeInTheDocument();
+  });
+});
+describe("Paper layout", () => {
+  it("keeps the approved heading and the real review drafts", () => {
+    render(<App />);
+    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(
+      "Ever watched a 🏀 game, and thought,what are they talkin’ bout?",
+    );
+    expect(
+      screen.getByRole("heading", { name: "The playbook" }),
+    ).toBeInTheDocument();
+    const preview = screen.getByRole("region", { name: "In review" });
+    expect(
+      within(preview).getByRole("heading", { name: "bluff screen" }),
+    ).toBeInTheDocument();
+    expect(within(preview).queryByText("heat check")).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Switch to dark mode" }),
+    ).toContainHTML("<svg");
+  });
+  it("focuses search with slash, Cmd+K, and Ctrl+K without interrupting editing or a dialog", () => {
+    render(<App />);
+    const input = screen.getByRole("searchbox");
+    for (const shortcut of [
+      { key: "/" },
+      { key: "k", metaKey: true },
+      { key: "K", ctrlKey: true },
+    ]) {
+      fireEvent.keyDown(document.body, shortcut);
+      expect(input).toHaveFocus();
+      (input as HTMLInputElement).blur();
+    }
+    input.focus();
+    const typing = new KeyboardEvent("keydown", {
+      key: "/",
+      bubbles: true,
+      cancelable: true,
+    });
+    input.dispatchEvent(typing);
+    expect(typing.defaultPrevented).toBe(false);
+    fireEvent.click(
+      screen.getByRole("button", { name: /A little more about us/ }),
+    );
+    const dialog = screen.getByRole("dialog");
+    const close = within(dialog).getByRole("button", { name: "Close dialog" });
+    close.focus();
+    fireEvent.keyDown(close, { key: "k", ctrlKey: true });
+    expect(close).toHaveFocus();
+  });
+  it("uses semantic colors for the court and players", () => {
+    route("#term-ghost-screen");
+    render(<App />);
+    const court = screen.getByRole("img", { name: /Half-court diagram/ });
+    expect(court.querySelector("rect")).toHaveAttribute(
+      "fill",
+      "var(--court-fill)",
+    );
+    expect(
+      court.querySelector('circle[fill="var(--player-fill)"]'),
+    ).not.toBeNull();
+    expect(court.querySelector('[stroke="#f15a29"]')).toBeNull();
   });
 });
 describe("sample review queue", () => {

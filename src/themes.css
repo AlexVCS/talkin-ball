@@ -1,105 +1,93 @@
 :root {
   color-scheme: light;
-  --bg: #f8f7f2;
-  --surface: #fffefa;
-  --surface-muted: #eeeee5;
-  --surface-hover: #e8ecdf;
-  --text: #242a24;
-  --text-muted: #606858;
-  --border: #dedfd4;
-  --border-strong: #9fae91;
-  --accent: #b63c17;
-  --accent-fg: #fffefa;
-  --accent-soft: #ffe4d1;
-  --accent-border: #b63c1766;
-  --primary-action: #242a24;
-  --primary-action-fg: #fffefa;
-  --primary-action-hover: #46573e;
-  --success: #3c5831;
-  --success-bg: #edf1e7;
-  --success-border: #b6c9a4;
+  --color-bg: #ffffff;
+  --color-ink: #111111;
+  --color-agate: #6b6b6b;
+  --color-rule: #e4e4e4;
+  --color-wash: #f4f4f2;
+  --color-court: #1d4ed8;
+  --color-bg-dark: #0b0b0c;
+  --color-ink-dark: #f2f2f0;
+  --color-agate-dark: #9b9b98;
+  --color-rule-dark: #26262a;
+  --color-wash-dark: #151517;
+  --color-court-dark: #7397ff;
+  --bg: var(--color-bg);
+  --surface: var(--color-bg);
+  --surface-muted: var(--color-wash);
+  --surface-hover: #ececea;
+  --text: var(--color-ink);
+  --text-muted: var(--color-agate);
+  --border: var(--color-rule);
+  --border-strong: #8b8b8b;
+  --accent: var(--color-court);
+  --accent-fg: #ffffff;
+  --accent-soft: #edf2ff;
+  --accent-border: #8ca7ef;
+  --primary-action: var(--color-ink);
+  --primary-action-fg: var(--color-bg);
+  --primary-action-hover: var(--color-court);
+  --success: #356242;
+  --success-bg: #f0f6f1;
+  --success-border: #b7ccbd;
   --warning: #765c20;
-  --warning-bg: #f6f0d9;
+  --warning-bg: #f7f3e8;
   --warning-border: #dcd3ae;
-  --danger: #a33b22;
-  --disabled-bg: #e0e2d5;
-  --selection: #ffb391;
-  --focus-ring: #b63c1726;
-  --quote-decoration: #e7e6d8;
-  --diagram-grid: #a5aa9010;
-  --court-fill: #e9e8dd;
-  --court-line: #8c9382;
-  --player-fill: #232a23;
-  --player-fg: #fffefa;
+  --danger: #ad302a;
+  --disabled-bg: #e8e8e6;
+  --selection: #c9d8ff;
+  --focus-ring: var(--color-court);
+  --quote-decoration: var(--color-rule);
+  --diagram-grid: transparent;
+  --court-fill: var(--color-wash);
+  --court-line: #929292;
+  --player-fill: var(--color-ink);
+  --player-fg: var(--color-bg);
 }
 
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --bg: #171b18;
-  --surface: #202621;
-  --surface-muted: #292f29;
-  --surface-hover: #343d33;
-  --text: #f2f0e8;
-  --text-muted: #b3b9ac;
-  --border: #3e473d;
-  --border-strong: #697660;
-  --accent: #ff946e;
-  --accent-fg: #29180f;
-  --accent-soft: #4a2d20;
-  --accent-border: #ff946e77;
-  --primary-action: #e4e9d9;
-  --primary-action-fg: #1b221a;
-  --primary-action-hover: #c4d1b5;
-  --success: #bcd9a7;
-  --success-bg: #293b25;
-  --success-border: #566d45;
+  --bg: var(--color-bg-dark);
+  --surface: var(--color-bg-dark);
+  --surface-muted: var(--color-wash-dark);
+  --surface-hover: #202023;
+  --text: var(--color-ink-dark);
+  --text-muted: var(--color-agate-dark);
+  --border: var(--color-rule-dark);
+  --border-strong: #6d6d74;
+  --accent: var(--color-court-dark);
+  --accent-fg: #0b0b0c;
+  --accent-soft: #182342;
+  --accent-border: #4a67b6;
+  --primary-action: var(--color-ink-dark);
+  --primary-action-fg: var(--color-bg-dark);
+  --primary-action-hover: var(--color-court-dark);
+  --success: #a7cfb1;
+  --success-bg: #17271c;
+  --success-border: #44694e;
   --warning: #e2ca87;
-  --warning-bg: #3d3421;
+  --warning-bg: #30291b;
   --warning-border: #76643e;
-  --danger: #ffab8c;
-  --disabled-bg: #343b32;
-  --selection: #804127;
-  --focus-ring: #ff946e33;
-  --quote-decoration: #3e4738;
-  --diagram-grid: #b3b9ac0b;
-  --court-fill: #303a30;
-  --court-line: #929f89;
-  --player-fill: #e4e9d9;
-  --player-fg: #1b221a;
+  --danger: #ff9d96;
+  --disabled-bg: #26262a;
+  --selection: #304881;
+  --quote-decoration: var(--color-rule-dark);
+  --court-fill: var(--color-wash-dark);
+  --court-line: #77777f;
+  --player-fill: var(--color-ink-dark);
+  --player-fg: var(--color-bg-dark);
 }
 
 .theme-toggle {
   width: 44px;
   height: 44px;
   flex-shrink: 0;
+  padding: 0;
   border: 1px solid var(--border);
   border-radius: 50%;
-  background: var(--surface);
-  color: var(--text);
+  color: var(--text-muted);
 }
-
 .theme-toggle:hover {
-  background: var(--surface-hover);
-  border-color: var(--border-strong);
-}
-
-@media (max-width: 600px) {
-  .header-inner {
-    flex-wrap: wrap;
-    padding-top: 12px;
-    row-gap: 0;
-  }
-  .theme-toggle {
-    width: 40px;
-    height: 40px;
-  }
-  .site-header .brand {
-    margin-right: auto;
-  }
-  .main-nav {
-    order: 1;
-    flex-basis: 100%;
-    min-height: 44px;
-    margin-left: 0;
-  }
+  color: var(--text);
+  background: var(--surface-muted);
 }

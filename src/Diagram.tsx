@@ -4,6 +4,7 @@ import type { Term } from "./data";
 
 export default function Diagram({ term }: { term: Term }) {
   const [replay, setReplay] = useState(0);
+  if (!term.shot && !term.play) return null;
   return (
     <figure className={`diagram ${term.shot ? "clock-diagram" : ""}`}>
       <div className="diagram-top">
@@ -18,39 +19,11 @@ export default function Diagram({ term }: { term: Term }) {
       {term.shot ? (
         <div className="shot-art" key={replay}>
           <div className="shot-clock">
-            <span className="ghost-digits" aria-hidden="true">
-              88
+            <span className="lit-digits">
+              :{String(term.shot.at).padStart(2, "0")}
             </span>
-            <span className="lit-digits">0{term.shot.at}</span>
-            <small>SHOT CLOCK</small>
+            <small>and under on the 24</small>
           </div>
-          <svg
-            viewBox="0 0 300 145"
-            role="img"
-            aria-label="Basketball backboard below a seven-second shot clock"
-          >
-            <path
-              d="M150 0v15M55 122V16h190v106zM119 113V72h62v41"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-            />
-            <path
-              d="m127 120 10 25m2-24 5 24m6-23v23m11-24-5 24m17-25-10 25M131 131q19 9 38 0"
-              stroke="currentColor"
-              fill="none"
-              opacity=".45"
-            />
-            <ellipse
-              cx="150"
-              cy="119"
-              rx="25"
-              ry="5"
-              fill="none"
-              stroke="#f15a29"
-              strokeWidth="3"
-            />
-          </svg>
         </div>
       ) : (
         <svg
@@ -72,13 +45,19 @@ export default function Diagram({ term }: { term: Term }) {
               <path
                 d="M0 0 5 3 0 6"
                 fill="none"
-                stroke="#f15a29"
+                stroke="var(--accent)"
                 strokeWidth="1.4"
               />
             </marker>
           </defs>
-          <rect x="102" y="1" width="96" height="113" fill="#e9e8dd" />
-          <g fill="none" stroke="#b9bcaf" strokeWidth="1.4">
+          <rect
+            x="102"
+            y="1"
+            width="96"
+            height="113"
+            fill="var(--court-fill)"
+          />
+          <g fill="none" stroke="var(--court-line)" strokeWidth="1.4">
             <path d="M1 239V1h298v238M18 1v84a142 142 0 0 0 264 0V1M102 1v113h96V1" />
             <circle cx="150" cy="114" r="36" />
             <path d="M126 31a24 24 0 0 0 48 0M132 24h36" />
@@ -93,7 +72,7 @@ export default function Diagram({ term }: { term: Term }) {
               <path
                 d={`M${ax} ${ay}Q${cx ?? (+ax + +bx) / 2} ${cy ?? (+ay + +by) / 2} ${bx} ${by}`}
                 fill="none"
-                stroke={kind === "def" ? "#80877b" : "#f15a29"}
+                stroke={kind === "def" ? "var(--text-muted)" : "var(--accent)"}
                 strokeWidth="2.5"
                 strokeDasharray={
                   kind === "pass" || kind === "trail" ? "5 4" : undefined
@@ -107,21 +86,21 @@ export default function Diagram({ term }: { term: Term }) {
               {kind === "screen" && (
                 <path
                   d={`M${+bx - 8} ${by}h16`}
-                  stroke="#f15a29"
+                  stroke="var(--accent)"
                   strokeWidth="3"
                 />
               )}
             </g>
           ))}
           {term.play?.x.map(([n, x, y]) => (
-            <g key={n} stroke="#7b8275" strokeWidth="2">
+            <g key={n} stroke="var(--text-muted)" strokeWidth="2">
               <path d={`M${x - 5} ${y - 5}l10 10m0-10-10 10`} />
               <text
                 x={x + 8}
                 y={y + 10}
                 stroke="none"
                 fontSize="8"
-                fill="#7b8275"
+                fill="var(--text-muted)"
               >
                 {n}
               </text>
@@ -130,15 +109,21 @@ export default function Diagram({ term }: { term: Term }) {
           {term.play?.o.map(([n, x, y, ball]) => (
             <g key={n}>
               {!!ball && (
-                <circle cx={x} cy={y} r="14" fill="#f15a29" opacity=".18" />
+                <circle
+                  cx={x}
+                  cy={y}
+                  r="14"
+                  fill="var(--accent)"
+                  opacity=".18"
+                />
               )}
-              <circle cx={x} cy={y} r="10" fill="#232a23" />
+              <circle cx={x} cy={y} r="10" fill="var(--player-fill)" />
               <text
                 x={x}
                 y={y + 3.5}
                 textAnchor="middle"
                 fontSize="10"
-                fill="#fff"
+                fill="var(--player-fg)"
               >
                 {n}
               </text>
@@ -146,7 +131,7 @@ export default function Diagram({ term }: { term: Term }) {
           ))}
         </svg>
       )}
-      <figcaption>{(term.play || term.shot)?.cap}</figcaption>
+      {term.play && <figcaption>{term.play.cap}</figcaption>}
       {term.play && (
         <div className="legend">
           <span>
@@ -157,13 +142,52 @@ export default function Diagram({ term }: { term: Term }) {
         </div>
       )}
       {term.shot && (
-        <div className="clock-scale">
-          <span>24 SEC</span>
-          <i />
-          <b>07</b>
-          <i />
-          <span>00</span>
-        </div>
+        <svg
+          className="clock-timeline"
+          viewBox="0 0 832 100"
+          role="img"
+          aria-label={term.shot.cap}
+        >
+          <rect
+            x="20"
+            y="10"
+            width="792"
+            height="10"
+            fill="var(--surface-muted)"
+          />
+          <rect
+            key={replay}
+            className="clock-highlight"
+            x={812 - (term.shot.at / 24) * 792}
+            y="10"
+            width={(term.shot.at / 24) * 792}
+            height="10"
+            fill="var(--accent)"
+          />
+          {Array.from({ length: 25 }, (_, i) => (
+            <line
+              key={i}
+              x1={20 + i * 33}
+              y1="28"
+              x2={20 + i * 33}
+              y2={i % 6 === 0 ? 40 : 34}
+              stroke="var(--text-muted)"
+            />
+          ))}
+          {[24, 18, 12, 6, 0].map((value, i) => (
+            <text
+              key={value}
+              x={20 + i * 198}
+              y="62"
+              fontSize="11"
+              fontFamily="var(--mono)"
+              textAnchor="middle"
+              fill="var(--text-muted)"
+            >
+              {value}
+            </text>
+          ))}
+        </svg>
       )}
     </figure>
   );
