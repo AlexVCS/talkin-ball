@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import html from "../index.html?raw";
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import ThemeToggle from "./ThemeToggle";
@@ -100,7 +100,6 @@ describe("theme preference", () => {
 });
 
 describe("pre-paint theme bootstrap", () => {
-  const html = readFileSync(new URL("../index.html", import.meta.url), "utf8");
   const bootstrap = html.match(/<script>([\s\S]*?)<\/script>/)![1];
 
   it("applies the saved theme before React loads", () => {
