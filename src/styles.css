@@ -1983,16 +1983,10 @@ button {
     font-size: 8px;
   }
   .hero h1 {
-    font-size: 83px;
+    font-size: clamp(42px, 16vw, 83px);
     line-height: 0.91;
     margin: 19px 0 17px;
     letter-spacing: -1px;
-  }
-  .hero h1 br:first-child {
-    display: none;
-  }
-  .hero h1 {
-    max-width: 360px;
   }
   .hero-copy > p:not(.eyebrow) {
     font-size: 11px;
@@ -2476,12 +2470,6 @@ button {
   }
 }
 @media (max-width: 580px) {
-  .hero h1 {
-    font-size: clamp(42px, 12vw, 56px);
-  }
-  .hero h1 br:first-child {
-    display: initial;
-  }
   .entry-heading h2 {
     font-size: clamp(30px, 9vw, 42px);
   }
