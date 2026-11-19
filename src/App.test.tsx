@@ -222,8 +222,9 @@ describe("Paper layout", () => {
   it("keeps the approved heading and the real review drafts", () => {
     render(<App />);
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(
-      "Ever watched a 🏀 game, and thought,what are they talkin’ bout?",
+      "Ever watched a game, and thought,what are they talkin’ bout?",
     );
+    expect(screen.getByRole("img", { name: "basketball" })).toBeInTheDocument();
     expect(
       screen.getByRole("heading", { name: "The playbook" }),
     ).toBeInTheDocument();

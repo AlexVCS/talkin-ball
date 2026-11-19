@@ -264,7 +264,7 @@ export default function App() {
                 role="img"
                 aria-label="basketball"
               >
-                🏀
+                <img src="/ball.svg" alt="" />
               </span>{" "}
               game, and thought,
               <br />
