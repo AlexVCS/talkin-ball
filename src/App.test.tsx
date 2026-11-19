@@ -1,5 +1,5 @@
 import { act, fireEvent, render, screen, within } from "@testing-library/react";
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import App from "./App";
 import { STORAGE_KEY } from "./model";
 
@@ -14,6 +14,34 @@ const route = (hash: string) =>
   });
 
 describe("dictionary", () => {
+  it("reveals the selected phone chip on direct links and navigation", () => {
+    const width = window.innerWidth;
+    window.innerWidth = 390;
+    try {
+      route("#term-blender");
+      render(<App />);
+      const scroll = vi.mocked(Element.prototype.scrollIntoView);
+      expect(scroll.mock.contexts).toContain(
+        document.querySelector('.term-button[aria-current="true"]'),
+      );
+      route("#term-gortat-screen");
+      expect(scroll.mock.contexts).toContain(
+        document.querySelector('.term-button[aria-current="true"]'),
+      );
+      expect(scroll).toHaveBeenCalledWith({
+        block: "nearest",
+        inline: "nearest",
+      });
+      fireEvent.change(screen.getByRole("searchbox"), {
+        target: { value: "zzzzzz" },
+      });
+      expect(
+        document.querySelector('.term-button[aria-current="true"]'),
+      ).toBeNull();
+    } finally {
+      window.innerWidth = width;
+    }
+  });
   it("opens a direct term link and searches aliases with no-result recovery", () => {
     render(<App />);
     expect(

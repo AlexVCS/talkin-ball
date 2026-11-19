@@ -1938,6 +1938,38 @@ button {
   .site-footer > button {
     font-size: 8px;
   }
+  .hero-copy > p:not(.eyebrow),
+  .facts dd,
+  .diagram figcaption,
+  .clip-quote blockquote,
+  .about-content > p:not(.large-copy),
+  .site-footer > p {
+    font-size: 14px;
+  }
+  .dictionary .eyebrow,
+  .hero-copy .eyebrow,
+  .facts dt,
+  .part-of-speech,
+  .verified,
+  .clip-attribution strong,
+  .clip-attribution small,
+  .related-terms small,
+  .proof-strip {
+    font-size: 12px;
+  }
+  .term-button,
+  .category-tabs button,
+  .section-heading .text-button {
+    min-height: 44px;
+  }
+  .bookmark-button {
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+  }
+  .search-box input {
+    text-overflow: ellipsis;
+  }
 }
 @media (max-width: 580px) {
   .header-inner {
@@ -2474,10 +2506,29 @@ button {
 }
 @media (max-width: 580px) {
   .hero h1 {
-    font-size: clamp(65px, 20vw, 83px);
+    font-size: clamp(42px, 12vw, 56px);
   }
   .hero h1 br:first-child {
     display: initial;
+  }
+  .entry-heading h2 {
+    font-size: clamp(30px, 9vw, 42px);
+  }
+  .hero-copy > p:not(.eyebrow),
+  .diagram figcaption,
+  .site-footer > p {
+    font-size: 14px;
+  }
+  .hero-copy .eyebrow,
+  .dictionary .eyebrow,
+  .facts dt,
+  .part-of-speech,
+  .verified,
+  .clip-attribution strong,
+  .clip-attribution small,
+  .related-terms small,
+  .proof-strip {
+    font-size: 12px;
   }
 }
 @media (prefers-reduced-motion: reduce) {
